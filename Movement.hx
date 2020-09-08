@@ -1,13 +1,11 @@
 package arm;
 
-import iron.system.Time;
 import iron.Trait;
 import iron.system.Input;
 import iron.math.Vec4;
 import iron.object.Transform;
-import armory.trait.physics.RigidBody;
-import armory.trait.physics.PhysicsWorld;
-
+import armory.trait.physics.bullet.RigidBody;
+import armory.trait.physics.bullet.PhysicsWorld;
 
 class Movement extends Trait
 {
@@ -15,7 +13,7 @@ class Movement extends Trait
 	var transform_movement:Transform;
 	var rotationSpeed = 1;
 	var speed = 0.1;
-		public function new() 
+	public function new() 
 	{
 		super();
 		iron.Scene.active.notifyOnInit(function () {
@@ -52,7 +50,7 @@ class Movement extends Trait
 		if (Input.getKeyboard().down("d")) transform_movement.move(object.transform.right(),speed);
 		if (Input.getKeyboard().down("a")) transform_movement.move(object.transform.right().mult(-1),speed); 
 		body.setAngularFactor(0, 0, 0);
-
+		
 		var btvec = body.getLinearVelocity();
 		body.setLinearVelocity(0.0, 0.0, btvec.z - 0.0);
 		
@@ -62,7 +60,7 @@ class Movement extends Trait
 	{
 		if (Input.getKeyboard().started("space"))
 		{
-			body.applyImpulse(new Vec4(0, 0, 6));
+			body.applyImpulse(new Vec4(0, 0, 5.25));
 		}
 	}
 }
