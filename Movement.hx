@@ -10,9 +10,10 @@ import armory.trait.physics.bullet.PhysicsWorld;
 class Movement extends Trait
 {
 	var body: RigidBody;
-	var transform_movement:Transform;
+	var transform_movement: Transform;
 	var rotationSpeed = 1;
 	var speed = 0.1;
+
 	public function new() 
 	{
 		super();
@@ -48,7 +49,7 @@ class Movement extends Trait
 		if (Input.getKeyboard().down("w")) transform_movement.move(object.transform.look(),speed);
 		if (Input.getKeyboard().down("s")) transform_movement.move(object.transform.look().mult(-1),speed);
 		if (Input.getKeyboard().down("d")) transform_movement.move(object.transform.right(),speed);
-		if (Input.getKeyboard().down("a")) transform_movement.move(object.transform.right().mult(-1),speed); 
+		if (Input.getKeyboard().down("a")) transform_movement.move(object.transform.right().mult(-1),speed);
 		body.setAngularFactor(0, 0, 0);
 		
 		var btvec = body.getLinearVelocity();
@@ -58,7 +59,13 @@ class Movement extends Trait
 
 	function jumping()
 	{
-		if (Input.getKeyboard().started("space"))
+		var ground_probe = new Vec4(0, 0, 0); // position of the end of the vector that checks if player touching the ground
+		ground_probe.x = object.transform.loc.x; // take coordinates from the middle of the player
+		ground_probe.y = object.transform.loc.y;
+		ground_probe.z = object.transform.loc.z - 1.3; // distance from middle of body to ground probe idk
+
+		 // test if there is object between the coordinates:
+		if (Input.getKeyboard().started("space") && (PhysicsWorld.active.rayCast(object.transform.loc, ground_probe) != null))
 		{
 			body.applyImpulse(new Vec4(0, 0, 5.25));
 		}
