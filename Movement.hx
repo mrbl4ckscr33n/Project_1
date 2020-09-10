@@ -13,6 +13,8 @@ class Movement extends Trait
 	var transform_movement: Transform;
 	var rotationSpeed = 1;
 	var speed = 0.1;
+	var ground_probe = new Vec4(0, 0, 0); // position of the end of the vector that checks if player touching the ground
+	var current_dir = new Vec4(0, 0, 0);
 
 	public function new() 
 	{
@@ -43,23 +45,46 @@ class Movement extends Trait
 
 	function walking()
 	{
-		if (Input.getKeyboard().down("shift")) speed = 0.2;
-		else speed = 0.1;
+		if(PhysicsWorld.active.rayCast(object.transform.loc, ground_probe) != null)
+		{
+			if (Input.getKeyboard().down("shift")) speed = 0.2;
+			else speed = 0.1;
 
-		if (Input.getKeyboard().down("w")) transform_movement.move(object.transform.look(),speed);
-		if (Input.getKeyboard().down("s")) transform_movement.move(object.transform.look().mult(-1),speed);
-		if (Input.getKeyboard().down("d")) transform_movement.move(object.transform.right(),speed);
-		if (Input.getKeyboard().down("a")) transform_movement.move(object.transform.right().mult(-1),speed);
-		body.setAngularFactor(0, 0, 0);
+			if (Input.getKeyboard().down("w"))
+				{
+					current_dir = object.transform.look();
+					transform_movement.move(current_dir, speed);
+				}
+			if (Input.getKeyboard().down("s"))
+				{
+					current_dir = object.transform.look().mult(-1);
+					transform_movement.move(current_dir, speed);
+				}
+			if (Input.getKeyboard().down("d"))
+				{
+					current_dir = object.transform.right();
+					transform_movement.move(current_dir, speed);
+				}
+			if (Input.getKeyboard().down("a"))
+				{
+					current_dir = object.transform.right().mult(-1);
+					transform_movement.move(current_dir, speed);
+				}
+
+			body.setAngularFactor(0, 0, 0);
 		
-		var btvec = body.getLinearVelocity();
-		body.setLinearVelocity(0.0, 0.0, btvec.z - 0.0);
-		
+			var btvec = body.getLinearVelocity();
+			body.setLinearVelocity(0.0, 0.0, btvec.z - 0.0);
+		}
+
+		else
+		{
+			transform_movement.move(current_dir, speed);
+		}
 	}
 
 	function jumping()
 	{
-		var ground_probe = new Vec4(0, 0, 0); // position of the end of the vector that checks if player touching the ground
 		ground_probe.x = object.transform.loc.x; // take coordinates from the middle of the player
 		ground_probe.y = object.transform.loc.y;
 		ground_probe.z = object.transform.loc.z - 1.3; // distance from middle of body to ground probe idk
