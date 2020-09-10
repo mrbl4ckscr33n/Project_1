@@ -55,28 +55,25 @@ class Movement extends Trait
 			if (Input.getKeyboard().down("w"))
 			{
 				current_dir = object.transform.look();
-				transform_movement.move(object.transform.look(), speed);
 			}
 			else if (Input.getKeyboard().down("s"))
 			{
 				current_dir = current_dir.addvecs(current_dir, object.transform.look().mult(-1));
-				transform_movement.move(object.transform.look().mult(-1), speed);
 			}
 			if (Input.getKeyboard().down("d"))
 			{
 				current_dir = current_dir.addvecs(current_dir, object.transform.right());
-				transform_movement.move(object.transform.right(), speed);
 			}
 			else if (Input.getKeyboard().down("a"))
 			{
 				current_dir = current_dir.addvecs(current_dir, object.transform.right().mult(-1));
-				transform_movement.move(object.transform.right().mult(-1), speed);
 			}
+			transform_movement.move(current_dir.normalize(), speed);
 		}
 
 		else
 		{
-			transform_movement.move(current_dir, speed);
+			transform_movement.move(current_dir.normalize(), speed);
 		}
 		
 		body.setAngularFactor(0, 0, 0);
