@@ -6,6 +6,7 @@ import iron.math.Vec4;
 import iron.object.Transform;
 import armory.trait.physics.bullet.RigidBody;
 import armory.trait.physics.bullet.PhysicsWorld;
+import armory.trait.internal.CanvasScript;
 
 class Movement extends Trait
 {
@@ -20,32 +21,26 @@ class Movement extends Trait
 	{
 		super();
 		iron.Scene.active.notifyOnInit(function () {
-			transform_movement = object.transform;
 			body = object.getTrait(RigidBody);
-			PhysicsWorld.active.notifyOnPreUpdate(mouselock);
 		});
 
 		notifyOnUpdate (function()
 		{
 			walking();
 			jumping();
+			look_horizontal();
 		});
 	}
 
-	function mouselock()
+	function look_horizontal()
 	{
-		if (Input.occupied || !body.ready) return;
-
-		if (Input.getMouse().started() && !Input.getMouse().locked) Input.getMouse().lock();
-		else if (Input.getKeyboard().started("escape") && Input.getMouse().locked) Input.getMouse().unlock();
-
-		if (Input.getMouse().moved) transform_movement.rotate(Vec4.zAxis(),-Input.getMouse().movementX / 250 * rotationSpeed);
+		if (Input.getMouse().moved) object.transform.rotate(Vec4.zAxis(),-Input.getMouse().movementX / 250 * rotationSpeed);
 		body.syncTransform();
 	}
 
 	function walking()
 	{
-		if(PhysicsWorld.active.rayCast(object.transform.loc, ground_probe) != null)
+		if((PhysicsWorld.active.rayCast(object.transform.loc, ground_probe) != null) && (PhysicsWorld.active.getContacts(body) != null)) // change direction only when touching the ground
 		{
 			current_dir.set(0, 0, 0);
 
@@ -58,7 +53,7 @@ class Movement extends Trait
 			}
 			else if (Input.getKeyboard().down("s"))
 			{
-				current_dir = current_dir.addvecs(current_dir, object.transform.look().mult(-1));
+				current_dir = current_dir.addvecs(current_dir, object.transform.look().mult(-1)); // all inputs are added together
 			}
 			if (Input.getKeyboard().down("d"))
 			{
@@ -68,18 +63,14 @@ class Movement extends Trait
 			{
 				current_dir = current_dir.addvecs(current_dir, object.transform.right().mult(-1));
 			}
-			transform_movement.move(current_dir.normalize(), speed);
 		}
 
-		else
-		{
-			transform_movement.move(current_dir.normalize(), speed);
-		}
+		object.transform.move(current_dir.normalize(), speed);
 		
 		body.setAngularFactor(0, 0, 0);
 		
 		var btvec = body.getLinearVelocity();
-		body.setLinearVelocity(0.0, 0.0, btvec.z - 0.0);
+		body.setLinearVelocity(0.0, 0.0, btvec.z);
 	}
 
 	function jumping()
