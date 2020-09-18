@@ -16,7 +16,8 @@ class Sight extends iron.Trait {
 
 	var theoreticalRotation:FastFloat = 0.0;
 
-	public function new() {
+	public function new()
+	{
 		super();
 
 		// notifyOnInit(function() {
@@ -24,7 +25,6 @@ class Sight extends iron.Trait {
 
 		notifyOnUpdate(function()
 		{
-			mouselock();
 			look_vertically();
 		});
 
@@ -32,17 +32,9 @@ class Sight extends iron.Trait {
 		// });
 	}
 
-	function mouselock()
-	{
-		if (Input.occupied) return;
-
-		if (Input.getMouse().started() && !Input.getMouse().locked) Input.getMouse().lock();
-		else if (Input.getKeyboard().started("escape") && Input.getMouse().locked) Input.getMouse().unlock();
-	}
-
 	function look_vertically()
 	{
-		if(Input.getMouse().moved) // unneccessary steps are skipped
+		if(Input.getMouse().moved && Input.getMouse().locked) // unneccessary steps are skipped
 		{
 			theoreticalRotation = -Input.getMouse().movementY/250; // function can only be called once before the movement value resets
 

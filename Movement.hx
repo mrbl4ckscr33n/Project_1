@@ -1,26 +1,30 @@
 package arm;
 
 import iron.Trait;
+import iron.Scene;
 import iron.system.Input;
 import iron.math.Vec4;
 import iron.object.Transform;
 import armory.trait.physics.bullet.RigidBody;
 import armory.trait.physics.bullet.PhysicsWorld;
 import armory.trait.internal.CanvasScript;
+import armory.system.Event;
 
 class Movement extends Trait
 {
 	var body: RigidBody;
-	var transform_movement: Transform;
 	var rotationSpeed = 1;
 	var speed = 0.1;
 	var ground_probe = new Vec4(0, 0, 0); // position of the end of the vector that checks if player touching the ground
 	var current_dir = new Vec4(0, 0, 0);
+	var moveLegal: Bool = true;
 
 	public function new() 
 	{
 		super();
-		iron.Scene.active.notifyOnInit(function () {
+		
+		iron.Scene.active.notifyOnInit(function ()
+		{
 			body = object.getTrait(RigidBody);
 		});
 
@@ -28,13 +32,13 @@ class Movement extends Trait
 		{
 			walking();
 			jumping();
-			look_horizontal();
+			look_horizontally();
 		});
 	}
 
-	function look_horizontal()
+	function look_horizontally()
 	{
-		if (Input.getMouse().moved) object.transform.rotate(Vec4.zAxis(),-Input.getMouse().movementX / 250 * rotationSpeed);
+		if (Input.getMouse().moved && Input.getMouse().locked) object.transform.rotate(Vec4.zAxis(),-Input.getMouse().movementX / 250 * rotationSpeed);
 		body.syncTransform();
 	}
 
