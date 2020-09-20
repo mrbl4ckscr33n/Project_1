@@ -87,7 +87,6 @@ class Inventory extends Sight
 				hit_1.rb.applyImpulse(impili);
 				pickedUp = false;
 			}
-
 		}
 
 		notifyOnUpdate(function()
