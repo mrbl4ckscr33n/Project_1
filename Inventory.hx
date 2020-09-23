@@ -1,9 +1,5 @@
 package arm;
 
-import kha.graphics4.hxsl.Types.Vec;
-import js.html.idb.CursorDirection;
-import armory.logicnode.RadToDegNode;
-import iron.system.Storage;
 import iron.Scene;
 import iron.App;
 import iron.math.Vec4;
@@ -12,54 +8,45 @@ import armory.system.Event;
 import armory.trait.internal.CanvasScript;
 import armory.trait.physics.bullet.RigidBody;
 import armory.trait.physics.bullet.PhysicsWorld;
-import iron.Scene;
 import iron.object.Object;
+import armory.trait.PhysicsBreak;
 
 class Inventory extends Sight
 {
 	var canvas: CanvasScript;
+
 	var inventoryOpen: Bool = false;
-	var hit_1: Hit;
-	var impili: Vec4 = new Vec4(0.0);
+	var pickUpHit: Hit;
 	var pickedUp: Bool = false;
-	var rb: RigidBody;
-	var data_inv:Int;
 
 	public function new()
 	{
 		super();
 
-		impili.z = 10;
+		var itemContainer = new Array<RigidBody>();
 
 		notifyOnInit(function()
 		{
 			canvas = object.getTrait(CanvasScript);
-
-			canvas.setCanvasVisibility(false);
-			canvas.setUiScale(1.0);
-
-			//canvas.notifyOnInit(function()
-			//	{
-			//	});
 		});
 
 		function toggleInventory()
-		{
+		{	
 			if (Input.occupied) return;
 			
-			if(Input.getMouse().locked)
-			{
-				canvas.setCanvasVisibility(true);
-				inventoryOpen = true;
-				Input.getMouse().unlock(); // unlock mouse while in inventory
-			}
+				if(Input.getMouse().locked)
+				{
+					canvas.setCanvasVisibility(true);
+					inventoryOpen = true;
+					Input.getMouse().unlock(); // unlock mouse while in inventory
+				}
 
-			else if(!Input.getMouse().locked)
-			{
-				canvas.setCanvasVisibility(false);
-				inventoryOpen = false;
-				Input.getMouse().lock(); // lock mouse when inventory is closed
-			}
+				else if(!Input.getMouse().locked)
+				{
+					canvas.setCanvasVisibility(false);
+					inventoryOpen = false;
+					Input.getMouse().lock(); // lock mouse when inventory is closed
+				}
 		};
 
 		function lockMouse()
@@ -85,20 +72,31 @@ class Inventory extends Sight
 				currentDir = object.transform.up();
 				currentDir.mult(-3);
 
-				hit_1 = PhysicsWorld.active.rayCast(currentLoc, currentDir.add(currentLoc));
+				pickUpHit = PhysicsWorld.active.rayCast(currentLoc, currentDir.add(currentLoc));
 				pickedUp = true;
+			}
 
-				if(hit_1 != null && hit_1.rb.ready && pickedUp)
+			if((pickUpHit != null) && pickUpHit.rb.ready && pickedUp)
+			{
+				if(pickUpHit.rb.object.properties != null)
 				{
-					hit_1.rb.object.remove();
+					if(pickUpHit.rb.object.properties["pickUpAble"])
+					{
+						itemContainer.push(pickUpHit.rb);
+						pickUpHit.rb.object.remove();
+						trace(itemContainer[0]);
+					}
 				}
+				pickedUp = false;
 			}
 		}
 
-		function place()
+		function placeDown()
 		{
-			if (Input.getKeyboard().started("i"))
+			if (Input.getKeyboard().started("i") && (itemContainer.length > 0))
 				{
+					var drop = itemContainer.pop();
+
 					var currentDir = new Vec4(0.0);
 					var currentLoc = new Vec4(0.0);
 
@@ -112,22 +110,23 @@ class Inventory extends Sight
 
 					currentDir.add(currentLoc);
 
-					iron.Scene.active.spawnObject("Test", null, function(o:Object)
+					iron.Scene.active.spawnObject(drop.object.name, null, function(o:Object)
 					{
 						o.transform.loc = currentDir.add(new Vec4(0,0,1));
 						o.transform.buildMatrix();
-					
-						var drop = o.getTrait(RigidBody);
-						drop.syncTransform();
+						
+						var dropped = o.getTrait(RigidBody);
+						dropped.syncTransform();
 					});
 				}
 		}
+
 		notifyOnUpdate(function()
 		{
 			if(Input.getKeyboard().started("e")) toggleInventory();
 			pickUp();
 			lockMouse();
-			place();
+			placeDown();
 		});
 
 		Event.add("btn_1_pressed", toggleInventory);
@@ -139,20 +138,28 @@ class Inventory extends Sight
 
 class Item
 {
-	public var onGround: Bool = true;
-	public var amountInventory: Int = 0;
+	public var amount: Int;
 	public var ready: Bool = false;
 
 	public function new()
 	{
+		amount = 0;
+
 		ready = true;
+	}
+
+	function updateItem()
+	{
+
 	}
 }
 
-class WeirdObject extends Item
+class TreeItem extends Item
 {
+	public var treeColor: String;
 	public function new()
 	{
+		treeColor = "green";
 		super();
 	}
 }
