@@ -1,104 +1,114 @@
 package arm;
 
+import kha.Color;
 using kha.graphics2.GraphicsExtension;
 
 import kha.Font;
 import armory.system.Event;
 import iron.data.Data;
 import iron.Trait;
+import iron.system.Input;
 import zui.Zui;
 import zui.Ext;
 import zui.Themes;
 
+@:access(zui.Zui)
 class NewCanvasScript extends iron.Trait
 {
-	#if arm_ui
-	
-		var zui_1: Zui;
-		var canvas_1: TCanvas;
-		var zui_options_1: ZuiOptions;
-		var element_1: TElement;
-		var element_2: TElement;
+	var zui_1: Zui;
+	var canvas_1: TCanvas;
+	var zui_options_1: ZuiOptions;
+	var element_1: TElement;
+	var element_2: TElement;
+	var element_3: TElement;
 
-		var element_array_1 = new Array<TElement>();
-		var asset_array_1 = new Array<TAsset>();
-		var asset_1: TAsset;
-		var asset_2: TAsset;
+	var element_array_1 = new Array<TElement>();
+	var asset_array_1 = new Array<TAsset>();
+	var asset_1: TAsset;
+	var asset_2: TAsset;
+		
+	public var ready(get, null): Bool;
+	function get_ready(): Bool { return canvas_1 != null; }
 
-		public var ready(get, null): Bool;
-		function get_ready(): Bool { return canvas_1 != null; }
+	// from canvas:
+
+	public static var assetMap = new Map<Int, Dynamic>(); // kha.Image | kha.Font
+	public static var themes = new Array<zui.Themes.TTheme>();
+	static var events:Array<String> = [];
 	
-		public function new()
+	public static var screenW = -1;
+	public static var screenH = -1;
+	static var zui_2: Zui;
+	static var h = new zui.Zui.Handle(); // TODO: needs one handle per canvas
+
+	//
+	
+	public function new()
+	{
+		super();
+
+		Event.add("trace", function()
 		{
-			super();
+			canvas_1.elements[0].x += 10;
+		});
 
-			Event.add("trace", function()
-			{
-				canvas_1.elements[0].x += 10;
-			});
-
-			// idk:
-			if (NewCanvas.themes.length == 0)
-			{
-				NewCanvas.themes.push(zui.Themes.light);
-			}
-
-			// create element array for canvas:
-			element_1 = {id: 0, type: 1, name: "img_1", x: 720, y: 120, width: 256, height: 256, text: null, asset: "asset_1", event: "trace"};
-			element_2 = {id: 1, type: 2, name: "btn_1", x: 0, y: 0, width: 50, height: 50, text: "push to move", asset: null, event: "trace"};
-			element_array_1[0] = element_1;
-			element_array_1[1] = element_2;
-
-			// create asset array for canvas:
-			asset_1 = {id: 0, name: "asset_1", file: "../../Assets/icosphere.png"};
-			asset_array_1[0] = asset_1;
-
-			// setup canvas and elements:
-			iron.data.Data.getFont("font_default.ttf", function(f: kha.Font)
-			{
-				canvas_1 = {name: "canvas_1", x: 0, y: 0, width: 960, height: 540, elements: element_array_1, theme: "Default Light", assets: asset_array_1};
-
-				// tell the zui which fonts and theme to use:
-				zui_options_1 = {font: f, theme: zui.Themes.light};
-
-				zui_1 = new Zui(zui_options_1);
-
-				iron.data.Data.getImage("icosphere.png", function(image: kha.Image)
-				{
-					NewCanvas.assetMap.set(canvas_1.assets[0].id, image);
-				});
-			});
-	
-			notifyOnRender2D(function(g: kha.graphics2.Graphics)
-			{
-				if (canvas_1 == null) return;
-
-				//canvas_1.width = kha.System.windowWidth()
-				//canvas_1.height = kha.System.windowHeight()
-				//setCanvasDimensions(kha.System.windowWidth(), kha.System.windowHeight());
-
-				var eventNameArray = NewCanvas.draw(zui_1, canvas_1, g);
-	
-				for (e in eventNameArray)
-				{
-					var eventArray = armory.system.Event.get(e);
-					if (eventArray != null)
-					{
-						for (event in eventArray)
-						{
-							event.onEvent();
-						}
-					}
-				}
-			});
+		// idk:
+		if (themes.length == 0)
+		{
+				themes.push(zui.Themes.light);
 		}
 
-	#else
+		// create element array for canvas:
+		element_1 = {id: 0, type: 20, name: "img_1", x: 720, y: 120, width: 256, height: 256, text: null, asset: "asset_1", event: "trace"};
+		element_2 = {id: 1, type: 2, name: "btn_1", x: 0, y: 0, width: 200, height: 50, text: "push to move", event: "trace", color: 0xffff0000, color_text: 0xffffffff, color_hover: 0xff800080, color_press: 0xff000000};
+		element_3 = {id: 2, type: 20, name: "DragAble_1", x: 500, y: 500, width: 100, height: 100, text: null, asset: "asset_1", event: "trace"};
+		element_array_1[0] = element_1;
+		element_array_1[1] = element_2;
+		element_array_1[2] = element_3;
+
+		// create asset array for canvas:
+		asset_1 = {id: 0, name: "asset_1", file: "../../Assets/grid.png"};
+		asset_array_1[0] = asset_1;
+
+		// setup canvas and elements:
+		iron.data.Data.getFont("C:/Windows/Fonts/Arial.ttf", function(f: kha.Font)
+		{
+			canvas_1 = {name: "canvas_1", x: 0, y: 0, width: 960, height: 540, elements: element_array_1, theme: "Default Light", assets: asset_array_1};
+
+			// tell the zui which fonts and theme to use:
+			zui_options_1 = {font: f, theme: zui.Themes.light};
+
+			zui_1 = new Zui(zui_options_1);
+
+			iron.data.Data.getImage("E:/Blender/Projects/Assets/grid.png", function(image: kha.Image)
+			{
+				assetMap.set(canvas_1.assets[0].id, image);
+			});
+		});
 	
-		public function new(canvasName: String) { super(); }
+		notifyOnRender2D(function(g: kha.graphics2.Graphics)
+		{
+			if (canvas_1 == null) return;
+
+			//canvas_1.width = kha.System.windowWidth()
+			//canvas_1.height = kha.System.windowHeight()
+			//setCanvasDimensions(kha.System.windowWidth(), kha.System.windowHeight());
+
+			var eventNameArray = draw(zui_1, canvas_1, g);
 	
-	#end
-}
+			for (e in eventNameArray)
+			{
+				var eventArray = armory.system.Event.get(e);
+				if (eventArray != null)
+				{
+					for (event in eventArray)
+					{
+						event.onEvent();
+					}
+				}
+			}
+		});
+	}
 
 
 
@@ -108,33 +118,21 @@ class NewCanvasScript extends iron.Trait
 
 
 
-@:access(zui.Zui)
-class NewCanvas
-{
-	public static var assetMap = new Map<Int, Dynamic>(); // kha.Image | kha.Font
-	public static var themes = new Array<zui.Themes.TTheme>();
-	static var events:Array<String> = [];
-
-	public static var screenW = -1;
-	public static var screenH = -1;
-	static var zui_2: Zui;
-	static var h = new zui.Zui.Handle(); // TODO: needs one handle per canvas
-
-	public static function draw(zui_1: Zui, canvas: TCanvas, g: kha.graphics2.Graphics): Array<String>
+	public function draw(zui_1: Zui, canvas: TCanvas, g: kha.graphics2.Graphics): Array<String>
 	{
 		screenW = kha.System.windowWidth();
 		screenH = kha.System.windowHeight();
-
+	
 		events = [];
-
+	
 		zui_2 = zui_1;
-
+	
 		g.end();
 		zui_1.begin(g); // Bake elements
 		g.begin(false);
-
+	
 		zui_2.g = g;
-
+	
 		// draw every single element:
 		for (elem in canvas.elements)
 		{
@@ -143,16 +141,16 @@ class NewCanvas
 				drawElement(zui_2, canvas, elem);
 			}
 		}
-
+	
 		g.end();
 		zui_2.end(); // Finish drawing
 		g.begin(false);
-
+	
 		return events;
 	}
-
-	static function drawElement(ui: Zui, canvas: TCanvas, element: TElement, px = 0.0, py = 0.0) {
-
+	
+	public function drawElement(ui: Zui, canvas: TCanvas, element: TElement, px = 0.0, py = 0.0)
+	{
 		if (element == null || element.visible == false) return;
 
 		ui._x = canvas.x + scaled(element.x) + px;
@@ -162,7 +160,8 @@ class NewCanvas
 		var rotated = element.rotation != null && element.rotation != 0;
 		if (rotated) ui.g.pushRotation(element.rotation, ui._x + scaled(element.width) / 2, ui._y + scaled(element.height) / 2);
 
-		switch (element.type) {
+		switch (element.type)
+		{
 		case Text:
 			var font = ui.ops.font;
 			var size = ui.fontSize;
@@ -170,7 +169,7 @@ class NewCanvas
 			var fontAsset = element.asset != null && StringTools.endsWith(element.asset, ".ttf");
 			if (fontAsset) ui.ops.font = getAsset(canvas, element.asset);
 			ui.fontSize = scaled(element.height);
-			ui.t.TEXT_COL = getColor(element.color_text, getTheme(canvas.theme).TEXT_COL);
+			ui.t.TEXT_COL = element.color_text;
 			ui.text(getText(canvas, element), element.alignment);
 
 			ui.ops.font = font;
@@ -181,11 +180,12 @@ class NewCanvas
 			var bh = ui.t.BUTTON_H;
 			ui.t.ELEMENT_H = element.height;
 			ui.t.BUTTON_H = element.height;
-			ui.t.BUTTON_COL = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
-			ui.t.BUTTON_TEXT_COL = getColor(element.color_text, getTheme(canvas.theme).BUTTON_TEXT_COL);
-			ui.t.BUTTON_HOVER_COL = getColor(element.color_hover, getTheme(canvas.theme).BUTTON_HOVER_COL);
-			ui.t.BUTTON_PRESSED_COL = getColor(element.color_press, getTheme(canvas.theme).BUTTON_PRESSED_COL);
-			if (ui.button(getText(canvas, element), element.alignment)) {
+			ui.t.BUTTON_COL = element.color;
+			ui.t.BUTTON_TEXT_COL = element.color_text;
+			ui.t.BUTTON_HOVER_COL = element.color_hover;
+			ui.t.BUTTON_PRESSED_COL = element.color_press;
+			if (ui.button(getText(canvas, element), element.alignment))
+			{
 				var e = element.event;
 				if (e != null && e != "") events.push(e);
 			}
@@ -195,10 +195,12 @@ class NewCanvas
 		case Image:
 			var image = getAsset(canvas, element.asset);
 			var fontAsset = element.asset != null && StringTools.endsWith(element.asset, ".ttf");
-			if (image != null && !fontAsset) {
+			if (image != null && !fontAsset)
+				{
 				ui.imageScrollAlign = false;
 				var tint = element.color != null ? element.color : 0xffffffff;
-				if (ui.image(image, tint, scaled(element.height)) == zui.Zui.State.Released) {
+				if (ui.image(image, tint, scaled(element.height)) == zui.Zui.State.Released)
+				{
 					var e = element.event;
 					if (e != null && e != "") events.push(e);
 				}
@@ -207,74 +209,74 @@ class NewCanvas
 
 		case FRectangle:
 			var col = ui.g.color;
-			ui.g.color = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
+			ui.g.color = element.color;
 			ui.g.fillRect(ui._x, ui._y, ui._w, scaled(element.height));
 			ui.g.color = col;
 
 		case FCircle:
 			var col = ui.g.color;
-			ui.g.color = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
+			ui.g.color = element.color;
 			ui.g.fillCircle(ui._x + (scaled(element.width) / 2), ui._y + (scaled(element.height) / 2), ui._w / 2);
 			ui.g.color = col;
 
 		case Rectangle:
 			var col = ui.g.color;
-			ui.g.color = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
+			ui.g.color = element.color;
 			ui.g.drawRect(ui._x, ui._y, ui._w, scaled(element.height), element.strength);
 			ui.g.color = col;
 
 		case Circle:
 			var col = ui.g.color;
-			ui.g.color = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
+			ui.g.color = element.color;
 			ui.g.drawCircle(ui._x+(scaled(element.width) / 2), ui._y + (scaled(element.height) / 2), ui._w / 2, element.strength);
 			ui.g.color = col;
 
 		case FTriangle:
 			var col = ui.g.color;
-			ui.g.color = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
+			ui.g.color = element.color;
 			ui.g.fillTriangle(ui._x + (ui._w / 2), ui._y, ui._x, ui._y + scaled(element.height), ui._x + ui._w, ui._y + scaled(element.height));
 			ui.g.color = col;
 
 		case Triangle:
 			var col = ui.g.color;
-			ui.g.color = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
+			ui.g.color = element.color;
 			ui.g.drawLine(ui._x + (ui._w / 2), ui._y, ui._x, ui._y + scaled(element.height), element.strength);
 			ui.g.drawLine(ui._x, ui._y + scaled(element.height), ui._x + ui._w, ui._y + scaled(element.height), element.strength);
 			ui.g.drawLine(ui._x + ui._w, ui._y + scaled(element.height), ui._x + (ui._w / 2), ui._y, element.strength);
 			ui.g.color = col;
 
 		case Check:
-			ui.t.TEXT_COL = getColor(element.color_text, getTheme(canvas.theme).TEXT_COL);
-			ui.t.ACCENT_COL = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
-			ui.t.ACCENT_HOVER_COL = getColor(element.color_hover, getTheme(canvas.theme).BUTTON_HOVER_COL);
+			ui.t.TEXT_COL = element.color_text;
+			ui.t.ACCENT_COL = element.color_progress;
+			ui.t.ACCENT_HOVER_COL = element.color_hover;
 			ui.check(h.nest(element.id), getText(canvas, element));
 
 		case Radio:
-			ui.t.TEXT_COL = getColor(element.color_text, getTheme(canvas.theme).TEXT_COL);
-			ui.t.ACCENT_COL = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
-			ui.t.ACCENT_HOVER_COL = getColor(element.color_hover, getTheme(canvas.theme).BUTTON_HOVER_COL);
+			ui.t.TEXT_COL = element.color_text;
+			ui.t.ACCENT_COL = element.color_progress;
+			ui.t.ACCENT_HOVER_COL = element.color_hover;
 			Ext.inlineRadio(ui, h.nest(element.id), getText(canvas, element).split(";"));
 
 		case Combo:
-			ui.t.TEXT_COL = getColor(element.color_text, getTheme(canvas.theme).TEXT_COL);
-			ui.t.LABEL_COL = getColor(element.color_text, getTheme(canvas.theme).TEXT_COL);
-			ui.t.ACCENT_COL = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
-			ui.t.SEPARATOR_COL = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
-			ui.t.ACCENT_HOVER_COL = getColor(element.color_hover, getTheme(canvas.theme).BUTTON_HOVER_COL);
+			ui.t.TEXT_COL = element.color_text;
+			ui.t.LABEL_COL = element.color_text;
+			ui.t.ACCENT_COL = element.color_progress;
+			ui.t.SEPARATOR_COL = element.color;
+			ui.t.ACCENT_HOVER_COL = element.color_hover;
 			ui.combo(h.nest(element.id), getText(canvas, element).split(";"));
 
 		case Slider:
-			ui.t.TEXT_COL = getColor(element.color_text, getTheme(canvas.theme).TEXT_COL);
-			ui.t.LABEL_COL = getColor(element.color_text, getTheme(canvas.theme).TEXT_COL);
-			ui.t.ACCENT_COL = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
-			ui.t.ACCENT_HOVER_COL = getColor(element.color_hover, getTheme(canvas.theme).BUTTON_HOVER_COL);
+			ui.t.TEXT_COL = element.color_text;
+			ui.t.LABEL_COL = element.color_text;
+			ui.t.ACCENT_COL = element.color_progress;
+			ui.t.ACCENT_HOVER_COL = element.color_hover;
 			ui.slider(h.nest(element.id), getText(canvas, element), 0.0, 1.0, true, 100, true, element.alignment);
 
 		case TextInput:
-			ui.t.TEXT_COL = getColor(element.color_text, getTheme(canvas.theme).TEXT_COL);
-			ui.t.LABEL_COL = getColor(element.color_text, getTheme(canvas.theme).TEXT_COL);
-			ui.t.ACCENT_COL = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
-			ui.t.ACCENT_HOVER_COL = getColor(element.color_hover, getTheme(canvas.theme).BUTTON_HOVER_COL);
+			ui.t.TEXT_COL = element.color_text;
+			ui.t.LABEL_COL = element.color_text;
+			ui.t.ACCENT_COL = element.color_progress;
+			ui.t.ACCENT_HOVER_COL = element.color_hover;
 			ui.textInput(h.nest(element.id), getText(canvas, element), element.alignment);
 			if (h.nest(element.id).changed) {
 				var e = element.event;
@@ -282,19 +284,19 @@ class NewCanvas
 			}
 
 		case KeyInput:
-			ui.t.TEXT_COL = getColor(element.color_text, getTheme(canvas.theme).TEXT_COL);
-			ui.t.LABEL_COL = getColor(element.color_text, getTheme(canvas.theme).TEXT_COL);
-			ui.t.ACCENT_COL = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
-			ui.t.ACCENT_HOVER_COL = getColor(element.color_hover, getTheme(canvas.theme).BUTTON_HOVER_COL);
+			ui.t.TEXT_COL = element.color_text;
+			ui.t.LABEL_COL = element.color_text;
+			ui.t.ACCENT_COL = element.color_progress;
+			ui.t.ACCENT_HOVER_COL = element.color_hover;
 			Ext.keyInput(ui, h.nest(element.id), getText(canvas, element));
 
 		case ProgressBar:
 			var col = ui.g.color;
 			var progress = element.progress_at;
 			var totalprogress = element.progress_total;
-			ui.g.color = getColor(element.color_progress, getTheme(canvas.theme).TEXT_COL);
+			ui.g.color = element.color_progress;
 			ui.g.fillRect(ui._x, ui._y, ui._w / totalprogress * Math.min(progress, totalprogress), scaled(element.height));
-			ui.g.color = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
+			ui.g.color = element.color;
 			ui.g.drawRect(ui._x, ui._y, ui._w, scaled(element.height), element.strength);
 			ui.g.color = col;
 
@@ -302,23 +304,50 @@ class NewCanvas
 			var col = ui.g.color;
 			var progress = element.progress_at;
 			var totalprogress = element.progress_total;
-			ui.g.color = getColor(element.color_progress, getTheme(canvas.theme).TEXT_COL);
+			ui.g.color = element.color_progress;
 			ui.g.drawArc(ui._x + (scaled(element.width) / 2), ui._y + (scaled(element.height) / 2), ui._w / 2, -Math.PI / 2, ((Math.PI * 2) / totalprogress * progress) - Math.PI / 2, element.strength);
-			ui.g.color = getColor(element.color, getTheme(canvas.theme).BUTTON_COL);
+			ui.g.color = element.color;
 			ui.g.fillCircle(ui._x + (scaled(element.width) / 2), ui._y + (scaled(element.height) / 2), (ui._w / 2) - 10);
 			ui.g.color = col;
+
+		case DragAble:
+			var image = getAsset(canvas, element.asset);
+			var fontAsset = element.asset != null && StringTools.endsWith(element.asset, ".ttf");
+			if (image != null && !fontAsset)
+			{
+				ui.imageScrollAlign = false;
+				var tint = element.color != null ? element.color : 0xffffffff;
+
+				var currentState = ui.image(image, tint, scaled(element.height));
+
+				if (currentState == zui.Zui.State.Started)
+				{
+					element.drag = true;
+					//if (element.event != null && element.event != "") events.push(element.event);
+				}
+				else if(!Input.getMouse().down()) element.drag = false;
+				
+				if(element.drag)
+				{
+					element.x += ui.inputDX;
+					element.y += ui.inputDY;
+				}
+				ui.imageScrollAlign = true;
+			}
+		
 		case Empty:
 		}
 
-		if (element.children != null) {
+		if (element.children != null)
+		{
 			for (id in element.children) {
-				drawElement(ui, canvas, elemById(canvas, id), scaled(element.x) + px, scaled(element.y) + py);
-			}
+			drawElement(ui, canvas, elemById(canvas, id), scaled(element.x) + px, scaled(element.y) + py);
+		}
 		}
 
 		if (rotated) ui.g.popTransformation();
 	}
-
+	
 	static inline function getText(canvas: TCanvas, e: TElement): String {
 		return e.text;
 	}
@@ -352,60 +381,15 @@ class NewCanvas
 	}
 
 	public static function getTheme(theme: String): zui.Themes.TTheme {
-		for (t in NewCanvas.themes) {
+		for (t in themes) {
 			if (t.NAME == theme) return t;
 		}
 
 		return null;
 	}
 
-	/**
-	 * Returns the positional scaled offset of the given element based on its anchor setting.
-	 * @param canvas The canvas object
-	 * @param element The element
-	 * @return Array<Float> [xOffset, yOffset]
-	 */
-	public static function getAnchorOffset(canvas: TCanvas, element: TElement): Array<Float> {
-		var boxWidth, boxHeight: Float;
-		var offsetX = 0.0;
-		var offsetY = 0.0;
-
-		if (element.parent == null) {
-			boxWidth = canvas.width;
-			boxHeight = canvas.height;
-		} else {
-			var parent = elemById(canvas, element.parent);
-			boxWidth = scaled(parent.width);
-			boxHeight = scaled(parent.height);
-		}
-
-		switch (element.anchor) {
-			case Top:
-				offsetX += boxWidth / 2 - scaled(element.width) / 2;
-			case TopRight:
-				offsetX += boxWidth - scaled(element.width);
-			case CenterLeft:
-				offsetY += boxHeight / 2 - scaled(element.height) / 2;
-			case Center:
-				offsetX += boxWidth / 2 - scaled(element.width) / 2;
-				offsetY += boxHeight / 2 - scaled(element.height) / 2;
-			case CenterRight:
-				offsetX += boxWidth - scaled(element.width);
-				offsetY += boxHeight / 2 - scaled(element.height) / 2;
-			case BottomLeft:
-				offsetY += boxHeight - scaled(element.height);
-			case Bottom:
-				offsetX += boxWidth / 2 - scaled(element.width) / 2;
-				offsetY += boxHeight - scaled(element.height);
-			case BottomRight:
-				offsetX += boxWidth - scaled(element.width);
-				offsetY += boxHeight - scaled(element.height);
-		}
-
-		return [offsetX, offsetY];
-	}
+	//public function onTop(canvas: TCanvas, element: TElement)
 }
-
 
 
 
@@ -452,6 +436,7 @@ typedef TElement = {
 	@:optional var children: Array<Int>; // ids
 	@:optional var asset: String;
 	@:optional var visible: Null<Bool>;
+	@:optional var drag: Null<Bool>;
 }
 
 typedef TAsset = {
@@ -491,6 +476,7 @@ typedef TTranslatedText = {
 	var Triangle = 17;
 	var ProgressBar = 18;
 	var CProgressBar = 19;
+	var DragAble = 20;
 }
 
 @:enum abstract Anchor(Int) from Int to Int {
