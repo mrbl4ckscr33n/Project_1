@@ -130,7 +130,7 @@ class NewCanvasScript extends iron.Trait
 
 
 
-	public function draw(zui_1: Zui, canvas: TCanvas, g: kha.graphics2.Graphics): Array<String>
+	static public function draw(zui_1: Zui, canvas: TCanvas, g: kha.graphics2.Graphics): Array<String>
 	{
 		screenW = kha.System.windowWidth();
 		screenH = kha.System.windowHeight();
@@ -161,7 +161,7 @@ class NewCanvasScript extends iron.Trait
 		return events;
 	}
 	
-	public function drawElement(ui: Zui, canvas: TCanvas, element: TElement, px = 0.0, py = 0.0)
+	static public function drawElement(ui: Zui, canvas: TCanvas, element: TElement, px = 0.0, py = 0.0)
 	{
 		if (element == null || element.visible == false) return;
 

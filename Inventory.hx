@@ -1,15 +1,16 @@
 package arm;
 
-import iron.Scene;
-import iron.App;
-import iron.math.Vec4;
-import iron.system.Input;
 import armory.system.Event;
 import armory.trait.internal.CanvasScript;
-import armory.trait.physics.bullet.RigidBody;
 import armory.trait.physics.bullet.PhysicsWorld;
+import armory.trait.physics.bullet.RigidBody;
+import iron.App;
+import iron.Scene;
+import iron.data.Data;
+import iron.math.Vec4;
 import iron.object.Object;
-import armory.trait.PhysicsBreak;
+import iron.system.Input;
+import iron.data.Data;
 
 class Inventory extends Sight
 {
@@ -24,16 +25,23 @@ class Inventory extends Sight
 	{
 		super();
 
+		//var rawObject: TObj;
+		//var format: TSceneFormat;
+
+		//iron.Scene.active.createObject();
+
 		notifyOnInit(function()
 		{
 			canvas = object.getTrait(CanvasScript);
 			canvas.setCanvasVisibility(false);
 			canvas.setUiScale(0.5);
+			/*var file = "icosphere.png";
+			iron.data.Data.getImage(file, function(image: kha.Image) {trace(image);});*/
 		});
 
 		notifyOnUpdate(function()
 		{
-			if(Input.getKeyboard().started("e")) toggleInventory();
+			if(Input.getKeyboard().started("tab")) toggleInventory();
 			pickUp();
 			lockMouse();
 			placeDown();
@@ -46,7 +54,7 @@ class Inventory extends Sight
 	}
 
 	function toggleInventory()
-	{	
+	{
 		if (Input.occupied) return;
 			
 		if(Input.getMouse().locked)
@@ -74,8 +82,10 @@ class Inventory extends Sight
 
 	function pickUp()
 	{
-		if(Input.getKeyboard().started("f"))
+		if(Input.getKeyboard().started("e"))
 		{
+			//var raw_objs = Scene.active.raw.objects;
+			//var raw_obj = TObj;
 			var currentDir = new Vec4(0.0);
 			var currentLoc = new Vec4(0.0);
 
@@ -108,7 +118,7 @@ class Inventory extends Sight
 
 	function placeDown()
 	{
-		if (Input.getKeyboard().started("i") && (itemContainer.length > 0))
+		if (Input.getKeyboard().started("q") && (itemContainer.length > 0))
 		{
 			var drop = itemContainer.pop();
 	
@@ -129,6 +139,8 @@ class Inventory extends Sight
 			{
 				o.transform.loc = currentDir.add(new Vec4(0,0,1));
 				o.transform.buildMatrix();
+
+				o.properties = drop.object.properties;
 							
 				var dropped = o.getTrait(RigidBody);
 				dropped.syncTransform();

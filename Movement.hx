@@ -22,7 +22,7 @@ class Movement extends Trait
 	public function new() 
 	{
 		super();
-		
+
 		iron.Scene.active.notifyOnInit(function ()
 		{
 			body = object.getTrait(RigidBody);
