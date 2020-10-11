@@ -1,8 +1,8 @@
-package arm;
+package zui;
 
-import kha.Color;
 using kha.graphics2.GraphicsExtension;
 
+import iron.App;
 import kha.Font;
 import armory.system.Event;
 import iron.data.Data;
@@ -15,25 +15,15 @@ import zui.Themes;
 @:access(zui.Zui)
 class NewCanvasScript extends iron.Trait
 {
-	var zui_1: Zui;
-	var canvas_1: TCanvas;
-	var zui_options_1: ZuiOptions;
-	var element_1: TElement;
-	var element_2: TElement;
-	var element_3: TElement;
-	var element_4: TElement;
-	var saveElement: TElement;
+	var render2D: Array<kha.graphics2.Graphics->Void> = null;
 
-	var element_array_1 = new Array<TElement>();
-	var asset_array_1 = new Array<TAsset>();
-	var asset_1: TAsset;
-	var asset_2: TAsset;
-		
+	public var zui_1: Zui;
+	public var zui_options_1: ZuiOptions;
+	public var canvas_1: Tcanvas = {name: "canvas_1", x: 0, y: 0, width: 1920, height: 1080, elements: null, theme: "Default Light", assets: null};
+	
 	public var ready(get, null): Bool;
 	function get_ready(): Bool { return canvas_1 != null; }
-
-	// from canvas:
-
+	
 	public static var assetMap = new Map<Int, Dynamic>(); // kha.Image | kha.Font
 	public static var themes = new Array<zui.Themes.TTheme>();
 	static var events:Array<String> = [];
@@ -42,29 +32,27 @@ class NewCanvasScript extends iron.Trait
 	public static var screenH = -1;
 	static var zui_2: Zui;
 	static var h = new zui.Zui.Handle(); // TODO: needs one handle per canvas
+	
+	/*var element_1: Telement;
+	var element_2: Telement;
+	var element_3: Telement;
+	var element_4: Telement;
 
-	//
+	var element_array_1 = new Array<Telement>();
+	var asset_array_1 = new Array<Tasset>();
+	var asset_1: Tasset;
+	var asset_2: Tasset;*/
 	
 	public function new()
 	{
 		super();
 
-		Event.add("trace", function()
-		{
-			element_1.x += 10;
-		});
-
-		// idk:
-		if (themes.length == 0)
-		{
-				themes.push(zui.Themes.light);
-		}
-
 		// create element array for canvas:
-		element_1 = {id: 0, type: DragAble, name: "img_1", x: 720, y: 120, width: 100, height: 100, text: null, asset: "asset_1", event: "trace"};
+		/*element_1 = {id: 0, type: DragAble, name: "img_1", x: 720, y: 120, width: 100, height: 100, text: null, asset: "asset_1", event: "trace"};
 		element_2 = {id: 1, type: Button, name: "btn_1", x: 0, y: 0, width: 200, height: 50, text: "push to move", event: "trace", color: 0xffff0000, color_text: 0xffffffff, color_hover: 0xff800080, color_press: 0xff000000};
-		element_3 = {id: 2, type: DragAble, name: "DragAble_1", x: 200, y: 200, width: 100, height: 100, text: null, asset: "asset_1", event: "trace"};
+	    element_3 = {id: 2, type: DragAble, name: "DragAble_1", x: 200, y: 200, width: 100, height: 100, text: null, asset: "asset_1", event: "trace"};
 		element_4 = {id: 3, type: Container, name: "Container_1", x: 200, y: 400, width: 100, height: 100, asset: "asset_2", alignment: 5};
+
 		//saveElement = null;
 		element_array_1[1] = element_1;
 		element_array_1[2] = element_2;
@@ -81,7 +69,8 @@ class NewCanvasScript extends iron.Trait
 		// setup canvas and elements:
 		iron.data.Data.getFont("C:/Windows/Fonts/Arial.ttf", function(f: kha.Font)
 		{
-			canvas_1 = {name: "canvas_1", x: 0, y: 0, width: 960, height: 540, elements: element_array_1, theme: "Default Light", assets: asset_array_1};
+			canvas_1.elements = element_array_1;
+			canvas_1.assets = asset_array_1;
 
 			// tell the zui which fonts and theme to use:
 			zui_options_1 = {font: f, theme: zui.Themes.light};
@@ -96,11 +85,11 @@ class NewCanvasScript extends iron.Trait
 			{
 				assetMap.set(canvas_1.assets[1].id, image);
 			});
-		});
+		});*/
 	
-		notifyOnRender2D(function(g: kha.graphics2.Graphics)
+		callOnRender2D(function(g: kha.graphics2.Graphics)
 		{
-			if (canvas_1 == null) return;
+			if (canvas_1 == null) return; if (canvas_1.elements == null) return;
 
 			//canvas_1.width = kha.System.windowWidth()
 			//canvas_1.height = kha.System.windowHeight()
@@ -130,7 +119,7 @@ class NewCanvasScript extends iron.Trait
 
 
 
-	static public function draw(zui_1: Zui, canvas: TCanvas, g: kha.graphics2.Graphics): Array<String>
+	static public function draw(zui_1: Zui, canvas: Tcanvas, g: kha.graphics2.Graphics): Array<String>
 	{
 		screenW = kha.System.windowWidth();
 		screenH = kha.System.windowHeight();
@@ -148,10 +137,7 @@ class NewCanvasScript extends iron.Trait
 		// draw every single element:
 		for (elem in canvas.elements)
 		{
-			if (elem.parent == null)
-			{
-				drawElement(zui_2, canvas, elem);
-			}
+			if (elem.parent == null) drawElement(zui_2, canvas, elem);
 		}
 	
 		g.end();
@@ -161,7 +147,7 @@ class NewCanvasScript extends iron.Trait
 		return events;
 	}
 	
-	static public function drawElement(ui: Zui, canvas: TCanvas, element: TElement, px = 0.0, py = 0.0)
+	static public function drawElement(ui: Zui, canvas: Tcanvas, element: Telement, px = 0.0, py = 0.0)
 	{
 		if (element == null || element.visible == false) return;
 
@@ -332,7 +318,7 @@ class NewCanvasScript extends iron.Trait
 
 					var currentState = ui.image(image, tint, scaled(element.height));
 
-					if (currentState == zui.Zui.State.Started)	
+					/*if (currentState == zui.Zui.State.Started)	
 					{
 						element.drag = true;
 
@@ -340,7 +326,7 @@ class NewCanvasScript extends iron.Trait
 						{
 							if (element.event != null && element.event != "") events.push(element.event);
 
-							var kaka: TElement = canvas.elements.pop();
+							var kaka: Telement = canvas.elements.pop();
 
 							for (x in 0...(canvas.elements.length))
 							{
@@ -353,10 +339,23 @@ class NewCanvasScript extends iron.Trait
 								}
 							}
 
-							var koko: TElement = {id: element.id, type: DragAble, name: element.name, x: element.x, y: element.y, width: element.width, height: element.height, asset: element.asset, event: element.event, drag: element.drag};
+							var koko: Telement = {id: element.id, type: DragAble, name: element.name, x: element.x, y: element.y, width: element.width, height: element.height, asset: element.asset, event: element.event, drag: element.drag};
 							
 							element.type = Empty;
 							canvas.elements.push(koko);
+						}
+					}*/
+					if (currentState == zui.Zui.State.Started)
+					{
+						element.drag = true;
+
+						if(element.name != canvas.elements[canvas.elements.length - 1].name)
+						{
+							if (element.event != null && element.event != "") events.push(element.event);
+							
+							var kaka: Telement = canvas.elements.pop();//canvas.elements[canvas.elements.length - 1];
+							canvas.elements[canvas.elements.indexOf(element)] = kaka;
+							canvas.elements.push(element);
 						}
 					}
 					else if(!Input.getMouse().down()) element.drag = false;
@@ -407,55 +406,86 @@ class NewCanvasScript extends iron.Trait
 
 		if (element.children != null)
 		{
-			for (id in element.children) {
-			drawElement(ui, canvas, elemById(canvas, id), scaled(element.x) + px, scaled(element.y) + py);
-		}
+			for (id in element.children)
+			{
+				drawElement(ui, canvas, elemById(canvas, id), scaled(element.x) + px, scaled(element.y) + py);
+			}
 		}
 
 		if (rotated) ui.g.popTransformation();
 	}
 	
-	static inline function getText(canvas: TCanvas, e: TElement): String {
+	static inline function getText(canvas: Tcanvas, e: Telement): String
+	{
 		return e.text;
 	}
 
-	public static function getAsset(canvas: TCanvas, asset: String): Dynamic { // kha.Image | kha.Font
+	public static function getAsset(canvas: Tcanvas, asset: String): Dynamic // kha.Image | kha.Font
+	{
 		for (a in canvas.assets) if (a.name == asset) return assetMap.get(a.id);
 		return null;
 	}
 
+	public function setAsset(asset: Tasset, image: kha.Image): Void
+	{
+		assetMap.set(asset.id, image);
+	}
+
 	static var elemId = -1;
-	public static function getElementId(canvas: TCanvas): Int {
+	public static function getElementId(canvas: Tcanvas): Int
+	{
 		if (elemId == -1) for (e in canvas.elements) if (elemId < e.id) elemId = e.id;
 		return ++elemId;
 	}
 
 	static var assetId = -1;
-	public static function getAssetId(canvas: TCanvas): Int {
+	public static function getAssetId(canvas: Tcanvas): Int
+	{
 		if (assetId == -1) for (a in canvas.assets) if (assetId < a.id) assetId = a.id;
 		return ++assetId;
 	}
 
-	static function elemById(canvas: TCanvas, id: Int): TElement {
+	static function elemById(canvas: Tcanvas, id: Int): Telement
+	{
 		for (e in canvas.elements) if (e.id == id) return e;
 		return null;
 	}
 
-	static inline function scaled(f: Float): Int { return Std.int(f * zui_2.SCALE()); }
+	static inline function scaled(f: Float): Int
+	{
+		return Std.int(f * zui_2.SCALE());
+	}
 
-	public static inline function getColor(color: Null<Int>, defaultColor: Int): Int {
+	public static inline function getColor(color: Null<Int>, defaultColor: Int): Int
+	{
 		return color != null ? color : defaultColor;
 	}
 
-	public static function getTheme(theme: String): zui.Themes.TTheme {
-		for (t in themes) {
+	public static function getTheme(theme: String): zui.Themes.TTheme
+	{
+		for (t in themes)
+		{
 			if (t.NAME == theme) return t;
 		}
 
 		return null;
 	}
 
-	//public function onTop(canvas: TCanvas, element: TElement)
+	public function setCanvasVisibility(visible: Bool)
+	{ 
+		if(canvas_1.elements == null) return;
+		for(i in 0...canvas_1.elements.length)
+		{
+			canvas_1.elements[i].visible = visible;
+		}
+	}
+
+	public function callOnRender2D(f: kha.graphics2.Graphics->Void)
+	{
+		if (render2D == null) render2D = [];
+		render2D.push(f);
+		App.notifyOnRender2D(f);
+	}
 }
 
 
@@ -465,21 +495,21 @@ class NewCanvasScript extends iron.Trait
 
 
 
-typedef TCanvas = {
+typedef Tcanvas = {
 	var name: String;
 	var x: Float;
 	var y: Float;
 	var width: Int;
 	var height: Int;
-	var elements: Array<TElement>;
+	var elements: Array<Telement>;
 	var theme: String;
-	@:optional var assets: Array<TAsset>;
-	@:optional var locales: Array<TLocale>;
+	@:optional var assets: Array<Tasset>;
+	@:optional var locales: Array<Tlocale>;
 }
 
-typedef TElement = {
+typedef Telement = {
 	var id: Int;
-	var type: ElementType;
+	var type: TelementType;
 	var name: String;
 	var x: Float;
 	var y: Float;
@@ -506,26 +536,26 @@ typedef TElement = {
 	@:optional var drag: Null<Bool>;
 }
 
-typedef TAsset =
+typedef Tasset =
 {
 	var id: Int;
 	var name: String;
 	var file: String;
 }
 
-typedef TLocale =
+typedef Tlocale =
 {
 	var name: String; // "en"
-	var texts: Array<TTranslatedText>;
+	var texts: Array<TtranslatedText>;
 }
 
-typedef TTranslatedText =
+typedef TtranslatedText =
 {
 	var id: Int; // element id
 	var text: String;
 }
 
-@:enum abstract ElementType(Int) from Int to Int
+@:enum abstract TelementType(Int) from Int to Int
 {
 	var Text = 0;
 	var Image = 1;
@@ -551,7 +581,7 @@ typedef TTranslatedText =
 	var Container = 21;
 }
 
-@:enum abstract Anchor(Int) from Int to Int
+@:enum abstract Tanchor(Int) from Int to Int
 {
 	var TopLeft = 0;
 	var Top = 1;
@@ -563,4 +593,3 @@ typedef TTranslatedText =
 	var Bottom = 7;
 	var BottomRight = 8;
 }
-
