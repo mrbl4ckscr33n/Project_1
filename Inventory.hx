@@ -20,7 +20,7 @@ class Inventory extends Sight
 	var pickedUp: Bool = false;
 	//var itemContainer = new Array<RigidBody>();
 	var ncs_1: NewCanvasScript;
-	var background_1: Telement = {id: null, type: Container, name: null, x: null, y: null, width: 100, height: 100, alignment: 5, visible: false};
+	var background_1: Telement = {id: null, type: Container, name: null, x: 0, y: 0, width: 100, height: 100, alignment: 2, visible: false};
 	var asset_1: Tasset = {id: null, file: "../../Assets/inventory_background.png", name: null};
 
 	public function new()
@@ -103,9 +103,7 @@ class Inventory extends Sight
 			{
 				if(pickUpHit.rb.object.properties["pickUpAble"])
 				{
-					//itemContainer.push(pickUpHit.rb);
-					pickUpHit.rb.object.remove();
-					ItemOps.pushItems(ncs_1, pickUpHit.rb);
+					if(ItemOps.pushItems(ncs_1, pickUpHit.rb)) pickUpHit.rb.object.remove();
 				}
 			}
 			pickedUp = false;
@@ -114,35 +112,6 @@ class Inventory extends Sight
 
 	function placeDown()
 	{
-		/*if (Input.getKeyboard().started("q") && (itemContainer.length > 0))
-		{
-			var drop = itemContainer.pop();
-	
-			var currentDir = new Vec4(0.0);
-			var currentLoc = new Vec4(0.0);
-	
-			currentLoc.x = object.transform.worldx();
-			currentLoc.y = object.transform.worldy();
-			currentLoc.z = object.transform.worldz();
-	
-			// get look vector (3m long):
-			currentDir = object.transform.up();
-			currentDir.mult(-3);
-	
-			currentDir.add(currentLoc);
-	
-			iron.Scene.active.spawnObject(drop.object.name, null, function(o:Object)
-			{
-				o.transform.loc = currentDir.add(new Vec4(0,0,1));
-				o.transform.buildMatrix();
-
-				//o.properties = drop.object.properties;
-							
-				var dropped = o.getTrait(RigidBody);
-				dropped.syncTransform();
-			});
-		}*/
-
 		if (Input.getKeyboard().started("q"))
 		{
 			//find first DragAble in canvas:
@@ -152,7 +121,7 @@ class Inventory extends Sight
 				var a: Int = ncs_1.canvas_1.elements.length - 1;
 				while(a >= 0)
 				{
-					if(ncs_1.canvas_1.elements[a].type == DragAble) 
+					if(ncs_1.canvas_1.elements[a].type == DragAble)
 					{
 						for(b in 0...ncs_1.canvas_1.assets.length)
 						{
@@ -161,35 +130,37 @@ class Inventory extends Sight
 								nameToDrop = ncs_1.canvas_1.assets[b].file.substring(13, 14).toUpperCase()
 								+ ncs_1.canvas_1.assets[b].file.substring(14, ncs_1.canvas_1.assets[b].file.length - 4);
 								ncs_1.canvas_1.elements.remove(ncs_1.canvas_1.elements[a]);
+								a = -1;
+
+								var currentDir = new Vec4(0.0);
+								var currentLoc = new Vec4(0.0);
+						
+								currentLoc.x = object.transform.worldx();
+								currentLoc.y = object.transform.worldy();
+								currentLoc.z = object.transform.worldz();
+						
+								// get look vector (3m long):
+								currentDir = object.transform.up();
+								currentDir.mult(-3);
+						
+								currentDir.add(currentLoc);
+						
+								iron.Scene.active.spawnObject(nameToDrop, null, function(o:Object)
+								{
+									o.transform.loc = currentDir.add(new Vec4(0,0,1));
+									o.transform.buildMatrix();
+												
+									var dropped = o.getTrait(RigidBody);
+									dropped.syncTransform();
+								});
+								
+								break;
 							}
 						}
-						break;
 					}
 					a--;
 				}
 			}
-
-			var currentDir = new Vec4(0.0);
-			var currentLoc = new Vec4(0.0);
-	
-			currentLoc.x = object.transform.worldx();
-			currentLoc.y = object.transform.worldy();
-			currentLoc.z = object.transform.worldz();
-	
-			// get look vector (3m long):
-			currentDir = object.transform.up();
-			currentDir.mult(-3);
-	
-			currentDir.add(currentLoc);
-	
-			iron.Scene.active.spawnObject(nameToDrop, null, function(o:Object)
-			{
-				o.transform.loc = currentDir.add(new Vec4(0,0,1));
-				o.transform.buildMatrix();
-							
-				var dropped = o.getTrait(RigidBody);
-				dropped.syncTransform();
-			});
 		}
 	}
 }

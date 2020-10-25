@@ -89,7 +89,7 @@ class NewCanvasScript extends iron.Trait
 	
 		callOnRender2D(function(g: kha.graphics2.Graphics)
 		{
-			if (canvas_1 == null) return; if (canvas_1.elements == null) return;
+			if (canvas_1 == null || canvas_1.elements == null || zui_1 == null) return;
 
 			//canvas_1.width = kha.System.windowWidth()
 			//canvas_1.height = kha.System.windowHeight()
@@ -318,33 +318,6 @@ class NewCanvasScript extends iron.Trait
 
 					var currentState = ui.image(image, tint, scaled(element.height));
 
-					/*if (currentState == zui.Zui.State.Started)	
-					{
-						element.drag = true;
-
-						if(element.name != canvas.elements[canvas.elements.length - 1].name)
-						{
-							if (element.event != null && element.event != "") events.push(element.event);
-
-							var kaka: Telement = canvas.elements.pop();
-
-							for (x in 0...(canvas.elements.length))
-							{
-								if(canvas.elements[x].type == Empty)
-								{
-									if(canvas.elements[x].name != element.name)
-									{
-										canvas.elements[x] = kaka;
-									}
-								}
-							}
-
-							var koko: Telement = {id: element.id, type: DragAble, name: element.name, x: element.x, y: element.y, width: element.width, height: element.height, asset: element.asset, event: element.event, drag: element.drag};
-							
-							element.type = Empty;
-							canvas.elements.push(koko);
-						}
-					}*/
 					if (currentState == zui.Zui.State.Started)
 					{
 						element.drag = true;
@@ -353,7 +326,7 @@ class NewCanvasScript extends iron.Trait
 						{
 							if (element.event != null && element.event != "") events.push(element.event);
 							
-							var kaka: Telement = canvas.elements.pop();//canvas.elements[canvas.elements.length - 1];
+							var kaka: Telement = canvas.elements.pop();
 							canvas.elements[canvas.elements.indexOf(element)] = kaka;
 							canvas.elements.push(element);
 						}
@@ -369,24 +342,89 @@ class NewCanvasScript extends iron.Trait
 				}
 
 			case Container:
-				var totalSizeX: Int = (element.width * element.alignment - element.width + Std.int(element.x));
-				var totalSizeY: Int = (element.height * element.alignment - element.height + Std.int(element.y));
-
 				for(k in 0...element.alignment)
 				{
 					for(h in 0...canvas.elements.length)
 					{
 						if((canvas.elements[h].type == DragAble) && (!canvas.elements[h].drag))
 						{
-							canvas.elements[h].x = Math.round(canvas.elements[h].x/100) * 100;
-							canvas.elements[h].y = Math.round(canvas.elements[h].y/100) * 100;
-							if(canvas.elements[h].x > totalSizeX) canvas.elements[h].x = totalSizeX;
-							else if(canvas.elements[h].x < element.x) canvas.elements[h].x = element.x;
-							if(canvas.elements[h].y > totalSizeY) canvas.elements[h].y = totalSizeY;
-							else if(canvas.elements[h].y < element.y) canvas.elements[h].y = element.y;
+							var currentX = element.x;
+							var currentY = element.y;
+							var used: Bool = false;
+							var break_1: Bool = false;
+
+							// initial alignment in container:
+							if(canvas.elements[h].lastX == null)
+							{
+								while(currentY < element.height * element.alignment + element.y)
+								{
+									currentX = element.x;
+									while(currentX < element.width * element.alignment + element.x)
+									{
+										used = false;
+										for(c in 0...canvas.elements.length)
+										{
+											if((currentX == canvas.elements[c].x) && (currentY == canvas.elements[c].y) && (canvas.elements[h].id != canvas.elements[c].id) && (canvas.elements[c].type == DragAble))
+											{
+												used = true;
+												break;
+											}
+										}
+										if(!used)
+										{
+											canvas.elements[h].x = currentX;
+											canvas.elements[h].lastX = currentX;
+											canvas.elements[h].y = currentY;
+											canvas.elements[h].lastY = currentY;
+											break_1 = true;
+											break;
+										}
+										currentX += element.width;
+									}
+									if(break_1) break;
+									currentY += element.height;
+								}
+							}
+							// alignment if DragAble is let go:
+							else
+							{
+								var totalSizeX: Int = (element.width * element.alignment - element.width + Std.int(element.x));
+								var totalSizeY: Int = (element.height * element.alignment - element.height + Std.int(element.y));
+
+								canvas.elements[h].x = Math.round(canvas.elements[h].x/100) * 100;
+								canvas.elements[h].y = Math.round(canvas.elements[h].y/100) * 100;
+								
+								if(canvas.elements[h].x > totalSizeX) canvas.elements[h].x = totalSizeX;
+								else if(canvas.elements[h].x < element.x) canvas.elements[h].x = element.x;
+								if(canvas.elements[h].y > totalSizeY) canvas.elements[h].y = totalSizeY;
+								else if(canvas.elements[h].y < element.y) canvas.elements[h].y = element.y;
+	
+								var used: Bool = false;
+								for(a in 0...canvas.elements.length)
+								{
+									if((canvas.elements[h].x == canvas.elements[a].x) && (canvas.elements[h].y == canvas.elements[a].y) && (canvas.elements[h].id != canvas.elements[a].id) && (canvas.elements[a].type == DragAble))
+									{
+										used = true;
+										break;
+									}
+								}
+								if(!used)
+								{
+									trace("not used!");
+									canvas.elements[h].lastX = canvas.elements[h].x;
+									canvas.elements[h].lastY = canvas.elements[h].y;
+								}
+								else
+								{
+									trace("used!");
+									canvas.elements[h].x = canvas.elements[h].lastX;
+									canvas.elements[h].y = canvas.elements[h].lastY;
+								}
+							}
 						}
 					}
 				}
+
 				var image = getAsset(canvas, element.asset);
 				var fontAsset = element.asset != null && StringTools.endsWith(element.asset, ".ttf");
 				if (image != null && !fontAsset)
@@ -528,12 +566,14 @@ typedef Telement = {
 	@:optional var progress_total: Null<Int>;
 	@:optional var strength: Null<Int>;
 	@:optional var alignment: Null<Int>;
-	@:optional var anchor: Null<Int>;
+	@:optional var anchor: Null<Bool>;
 	@:optional var parent: Null<Int>; // id
 	@:optional var children: Array<Int>; // ids
 	@:optional var asset: String;
 	@:optional var visible: Null<Bool>;
 	@:optional var drag: Null<Bool>;
+	@:optional var lastX: Null<Float>;
+	@:optional var lastY: Null<Float>;
 }
 
 typedef Tasset =

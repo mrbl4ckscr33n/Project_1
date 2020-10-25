@@ -14,20 +14,79 @@ import armory.trait.physics.bullet.RigidBody;
 
 class ItemOps // static
 {
-	public static function pushItems(ncs_1: NewCanvasScript, rigidToPush: RigidBody)
+	public static function pushItems(ncs_1: NewCanvasScript, rigidToPush: RigidBody): Bool // returns if container is full
 	{
+		// check capacity:
+		var amountBeforePush: Int = 0;
+		var containerPointer: Int = null;
+		for(a in 0...ncs_1.canvas_1.elements.length)
+		{
+			if(ncs_1.canvas_1.elements[a].type == DragAble)
+			{
+				amountBeforePush++;
+			}
+			else if(ncs_1.canvas_1.elements[a].type == Container)
+			{
+				containerPointer = a;
+			}
+		}
+		if(amountBeforePush >= (ncs_1.canvas_1.elements[containerPointer].alignment * ncs_1.canvas_1.elements[containerPointer].alignment)) return false;
+
 		var element_0: Telement = rigidToPush.object.properties["Telement"];
 
 		var asset_0: Tasset = {id: null, name: null, file: null};
-		asset_0.file = asset_0.file = "../../Assets/" + rigidToPush.object.name.toLowerCase() + ".png";
+		asset_0.file = "../../Assets/" + rigidToPush.object.name.toLowerCase() + ".png";
 
 		pushElements(ncs_1, element_0, asset_0);
+		return true;
 	}
 
 	public static function pushElements(ncs_1: NewCanvasScript, element_0: Telement, asset_0: Tasset): Void
 	{
-		element_0.x = 0;
-		element_0.y = 0;
+		// find empty position for element:
+
+		if(element_0.type == DragAble)
+		{
+			if(ncs_1.canvas_1.elements != null)
+			{
+				var container_0: Telement = null;
+				for(a in 0...ncs_1.canvas_1.elements.length)
+				{
+					if(ncs_1.canvas_1.elements[a].type == Container) container_0 = ncs_1.canvas_1.elements[a];
+				}
+				var canvasX = Std.int(ncs_1.canvas_1.x);
+				var canvasY = Std.int(ncs_1.canvas_1.y);
+				var upperLineX = Std.int(ncs_1.canvas_1.x + container_0.width * (container_0.alignment - 1));
+				var upperLineY = Std.int(ncs_1.canvas_1.y + container_0.height * (container_0.alignment - 1));
+				var posExists: Bool = true;
+				var x: Int = canvasX;
+				var y: Int = canvasY;
+				while(y <= upperLineY)
+				{
+					while(x <= upperLineX)
+					{
+						for(a in 0...ncs_1.canvas_1.elements.length)
+						{
+							if((ncs_1.canvas_1.elements[a].x == x) && (ncs_1.canvas_1.elements[a].y == y)) posExists = true;
+						}
+						if(!posExists)
+						{
+							element_0.x = x;
+							element_0.y = y;
+							break;
+						}
+						x = x + 100;
+					}
+					if(!posExists) break;
+					y = y + 100;
+				}
+			}
+			else
+			{
+				element_0.x = ncs_1.canvas_1.x;
+				element_0.y = ncs_1.canvas_1.y;
+			}
+		}
 		
 		// find out if asset file name already exists:
 		var fileExists: Bool = false;
@@ -45,15 +104,15 @@ class ItemOps // static
 
 		if(!fileExists)
 		{
-			if(ncs_1.canvas_1.elements != null)
+			if(ncs_1.canvas_1.assets != null)
 			{
 				// create smallest possible id:
 				var idExists: Bool = false;
 				for(b in 0...128)
 				{
-					for(c in 0...ncs_1.canvas_1.elements.length)
+					for(c in 0...ncs_1.canvas_1.assets.length)
 					{
-						if(ncs_1.canvas_1.elements[c].id == b) idExists = true;
+						if(ncs_1.canvas_1.assets[c].id == b) idExists = true;
 					}
 					if(!idExists)
 					{
@@ -71,6 +130,7 @@ class ItemOps // static
 				ncs_1.canvas_1.assets = new Array<Tasset>();
 			}
 			element_0.asset = asset_0.name;
+			ncs_1.canvas_1.assets.push(asset_0);
 		}
 		
 		if(ncs_1.canvas_1.elements != null)
@@ -100,7 +160,6 @@ class ItemOps // static
 		}
 
 		ncs_1.canvas_1.elements.push(element_0);
-		ncs_1.canvas_1.assets.push(asset_0);
 
 		iron.data.Data.getFont("C:/Windows/Fonts/Arial.ttf", function(f: kha.Font)
 		{
