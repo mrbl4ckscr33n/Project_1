@@ -1,5 +1,6 @@
 package zui;
 
+import haxe.macro.Tools.TMacroStringTools;
 using kha.graphics2.GraphicsExtension;
 
 import iron.App;
@@ -33,59 +34,9 @@ class NewCanvasScript extends iron.Trait
 	static var zui_2: Zui;
 	static var h = new zui.Zui.Handle(); // TODO: needs one handle per canvas
 	
-	/*var element_1: Telement;
-	var element_2: Telement;
-	var element_3: Telement;
-	var element_4: Telement;
-
-	var element_array_1 = new Array<Telement>();
-	var asset_array_1 = new Array<Tasset>();
-	var asset_1: Tasset;
-	var asset_2: Tasset;*/
-	
 	public function new()
 	{
 		super();
-
-		// create element array for canvas:
-		/*element_1 = {id: 0, type: DragAble, name: "img_1", x: 720, y: 120, width: 100, height: 100, text: null, asset: "asset_1", event: "trace"};
-		element_2 = {id: 1, type: Button, name: "btn_1", x: 0, y: 0, width: 200, height: 50, text: "push to move", event: "trace", color: 0xffff0000, color_text: 0xffffffff, color_hover: 0xff800080, color_press: 0xff000000};
-	    element_3 = {id: 2, type: DragAble, name: "DragAble_1", x: 200, y: 200, width: 100, height: 100, text: null, asset: "asset_1", event: "trace"};
-		element_4 = {id: 3, type: Container, name: "Container_1", x: 200, y: 400, width: 100, height: 100, asset: "asset_2", alignment: 5};
-
-		//saveElement = null;
-		element_array_1[1] = element_1;
-		element_array_1[2] = element_2;
-		element_array_1[3] = element_3;
-		element_array_1[0] = element_4;
-		element_array_1[4] = {id: 4, type: null, name: null, x: null, y: null, width: null, height: null};
-
-		// create asset array for canvas:
-		asset_1 = {id: 0, name: "asset_1", file: "../../Assets/icosphere.png"};
-		asset_2 = {id: 1, name: "asset_2", file: "../../Assets/inventory_background.png"};
-		asset_array_1[0] = asset_1;
-		asset_array_1[1] = asset_2;
-
-		// setup canvas and elements:
-		iron.data.Data.getFont("C:/Windows/Fonts/Arial.ttf", function(f: kha.Font)
-		{
-			canvas_1.elements = element_array_1;
-			canvas_1.assets = asset_array_1;
-
-			// tell the zui which fonts and theme to use:
-			zui_options_1 = {font: f, theme: zui.Themes.light};
-
-			zui_1 = new Zui(zui_options_1);
-
-			iron.data.Data.getImage("E:/Blender/Projects/Assets/icosphere.png", function(image: kha.Image)
-			{
-				assetMap.set(canvas_1.assets[0].id, image);
-			});
-			iron.data.Data.getImage("E:/Blender/Projects/Assets/inventory_background.png", function(image: kha.Image)
-			{
-				assetMap.set(canvas_1.assets[1].id, image);
-			});
-		});*/
 	
 		callOnRender2D(function(g: kha.graphics2.Graphics)
 		{
@@ -121,6 +72,7 @@ class NewCanvasScript extends iron.Trait
 
 	static public function draw(zui_1: Zui, canvas: Tcanvas, g: kha.graphics2.Graphics): Array<String>
 	{
+		trace(canvas.elements);
 		screenW = kha.System.windowWidth();
 		screenH = kha.System.windowHeight();
 	
@@ -320,16 +272,8 @@ class NewCanvasScript extends iron.Trait
 
 					if (currentState == zui.Zui.State.Started)
 					{
+						if (element.event != null && element.event != "") events.push(element.event);
 						element.drag = true;
-
-						if(element.name != canvas.elements[canvas.elements.length - 1].name)
-						{
-							if (element.event != null && element.event != "") events.push(element.event);
-							
-							var kaka: Telement = canvas.elements.pop();
-							canvas.elements[canvas.elements.indexOf(element)] = kaka;
-							canvas.elements.push(element);
-						}
 					}
 					else if(!Input.getMouse().down()) element.drag = false;
 					
@@ -410,13 +354,11 @@ class NewCanvasScript extends iron.Trait
 								}
 								if(!used)
 								{
-									trace("not used!");
 									canvas.elements[h].lastX = canvas.elements[h].x;
 									canvas.elements[h].lastY = canvas.elements[h].y;
 								}
 								else
 								{
-									trace("used!");
 									canvas.elements[h].x = canvas.elements[h].lastX;
 									canvas.elements[h].y = canvas.elements[h].lastY;
 								}

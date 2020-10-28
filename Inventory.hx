@@ -1,5 +1,6 @@
 package arm;
 
+import kha.Color;
 import armory.system.Event;
 import armory.trait.physics.bullet.PhysicsWorld;
 import armory.trait.physics.bullet.RigidBody;
@@ -20,8 +21,12 @@ class Inventory extends Sight
 	var pickedUp: Bool = false;
 	//var itemContainer = new Array<RigidBody>();
 	var ncs_1: NewCanvasScript;
-	var background_1: Telement = {id: null, type: Container, name: null, x: 0, y: 0, width: 100, height: 100, alignment: 2, visible: false};
+	var background_1: Telement = {id: null, type: Container, name: "background", x: 700, y: 200, width: 100, height: 100, alignment: 5, visible: false};
+	var itemDescription: Telement = {id: null, type: Text, name: "itemDescription", x: 0, y: 0, width: 150, height: 25, visible: false, color_text: 0xffffffff, text: "this is your inventory."};
+	var descriptionBox: Telement = {id: null, type: FRectangle, name: "descriptionBox", x: 0, y: 0, width: 150, height: 25, visible: false, color: 0xff000000};
+	var select: Telement = {id: null, type: Image, name: "select", x: 700, y: 200, width: 100, height: 100, visible: false};
 	var asset_1: Tasset = {id: null, file: "../../Assets/inventory_background.png", name: null};
+	var asset_2: Tasset = {id: null, file: "../../Assets/select.png", name: null};
 
 	public function new()
 	{
@@ -29,6 +34,9 @@ class Inventory extends Sight
 
 		ncs_1 = new NewCanvasScript();
 		ItemOps.pushElements(ncs_1, background_1, asset_1);
+		ItemOps.pushElements(ncs_1, itemDescription);
+		ItemOps.pushElements(ncs_1, select, asset_2);
+		ItemOps.pushElements(ncs_1, descriptionBox);
 
 		notifyOnInit(function()
 		{
@@ -38,15 +46,93 @@ class Inventory extends Sight
 		notifyOnUpdate(function()
 		{
 			if(Input.getKeyboard().started("tab")) toggleInventory();
-			pickUp();
 			lockMouse();
 			placeDown();
+			if(inventoryOpen)
+			{
+				displayDescription();
+			}
+			else
+			{
+				pickUp();
+			}
 		});
 
 		Event.add("btn_1_pressed", toggleInventory);
 
 		// notifyOnRemove(function() {
 		// });
+	}
+
+	function displayDescription()
+	{
+		ncs_1.canvas_1.elements.remove(select);
+		ncs_1.canvas_1.elements.push(select);
+
+		for(a in 0...ncs_1.canvas_1.elements.length)
+		{
+			if(ncs_1.canvas_1.elements[a].drag && a < ncs_1.canvas_1.elements.length - 1)
+			{
+				var remove: Telement = ncs_1.canvas_1.elements[a];
+				ncs_1.canvas_1.elements.remove(remove);
+				ncs_1.canvas_1.elements.push(remove);
+			}
+		}
+
+		ncs_1.canvas_1.elements.remove(descriptionBox);
+		ncs_1.canvas_1.elements.push(descriptionBox);
+
+		ncs_1.canvas_1.elements.remove(itemDescription);
+		ncs_1.canvas_1.elements.push(itemDescription);
+
+		if(Input.getMouse().down("right"))
+		{
+			ncs_1.canvas_1.elements.remove(itemDescription);
+			ncs_1.canvas_1.elements.remove(descriptionBox);
+			return;
+		}
+
+		else if(Input.getMouse().down())
+		{
+			ncs_1.canvas_1.elements.remove(itemDescription);
+			ncs_1.canvas_1.elements.remove(descriptionBox);
+			return;
+		}
+
+		var mouseX = Input.getMouse().lastX;
+		var mouseY = Input.getMouse().lastY;
+		var hover = false;
+
+		for(a in 0...ncs_1.canvas_1.elements.length)
+		{
+			if(ncs_1.canvas_1.elements[a].type == DragAble)
+			{
+				if ((mouseX >= ncs_1.canvas_1.elements[a].x) && (mouseX <= (ncs_1.canvas_1.elements[a].x + ncs_1.canvas_1.elements[a].width)) && (mouseY >= ncs_1.canvas_1.elements[a].y) && (mouseY <= (ncs_1.canvas_1.elements[a].y + ncs_1.canvas_1.elements[a].height)))
+				{
+					hover = true;
+					for(b in 0...ncs_1.canvas_1.assets.length)
+					{
+						if(ncs_1.canvas_1.assets[b].name == ncs_1.canvas_1.elements[a].asset)
+						{
+							ncs_1.canvas_1.elements[ncs_1.canvas_1.elements.length - 1].text = ncs_1.canvas_1.assets[b].file.substring(13, 14)
+							+ ncs_1.canvas_1.assets[b].file.substring(14, ncs_1.canvas_1.assets[b].file.length - 4);
+							hover = true;
+							ncs_1.canvas_1.elements[ncs_1.canvas_1.elements.length - 1].x = mouseX;
+							ncs_1.canvas_1.elements[ncs_1.canvas_1.elements.length - 1].y = mouseY;
+							ncs_1.canvas_1.elements[ncs_1.canvas_1.elements.length - 2].x = mouseX + 10;
+							ncs_1.canvas_1.elements[ncs_1.canvas_1.elements.length - 2].y = mouseY + 14;
+							break;
+						}
+					}
+					break;
+				}
+			}
+		}
+		if(!hover) //ncs_1.canvas_1.elements[ncs_1.canvas_1.elements.length - 1].text = "";
+		{
+			ncs_1.canvas_1.elements.remove(itemDescription);
+			ncs_1.canvas_1.elements.remove(descriptionBox);
+		}
 	}
 
 	function toggleInventory()

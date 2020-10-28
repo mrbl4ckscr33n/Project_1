@@ -41,96 +41,53 @@ class ItemOps // static
 		return true;
 	}
 
-	public static function pushElements(ncs_1: NewCanvasScript, element_0: Telement, asset_0: Tasset): Void
+	public static function pushElements(ncs_1: NewCanvasScript, element_0: Telement, asset_0: Tasset = null): Void
 	{
-		// find empty position for element:
-
-		if(element_0.type == DragAble)
+		if(asset_0 != null)
 		{
-			if(ncs_1.canvas_1.elements != null)
-			{
-				var container_0: Telement = null;
-				for(a in 0...ncs_1.canvas_1.elements.length)
-				{
-					if(ncs_1.canvas_1.elements[a].type == Container) container_0 = ncs_1.canvas_1.elements[a];
-				}
-				var canvasX = Std.int(ncs_1.canvas_1.x);
-				var canvasY = Std.int(ncs_1.canvas_1.y);
-				var upperLineX = Std.int(ncs_1.canvas_1.x + container_0.width * (container_0.alignment - 1));
-				var upperLineY = Std.int(ncs_1.canvas_1.y + container_0.height * (container_0.alignment - 1));
-				var posExists: Bool = true;
-				var x: Int = canvasX;
-				var y: Int = canvasY;
-				while(y <= upperLineY)
-				{
-					while(x <= upperLineX)
-					{
-						for(a in 0...ncs_1.canvas_1.elements.length)
-						{
-							if((ncs_1.canvas_1.elements[a].x == x) && (ncs_1.canvas_1.elements[a].y == y)) posExists = true;
-						}
-						if(!posExists)
-						{
-							element_0.x = x;
-							element_0.y = y;
-							break;
-						}
-						x = x + 100;
-					}
-					if(!posExists) break;
-					y = y + 100;
-				}
-			}
-			else
-			{
-				element_0.x = ncs_1.canvas_1.x;
-				element_0.y = ncs_1.canvas_1.y;
-			}
-		}
-		
-		// find out if asset file name already exists:
-		var fileExists: Bool = false;
-		if(ncs_1.canvas_1.assets != null)
-		{
-			for(a in 0...ncs_1.canvas_1.assets.length)
-			{
-				if(ncs_1.canvas_1.assets[a].file == asset_0.file)
-				{
-					fileExists = true;
-					element_0.asset = ncs_1.canvas_1.assets[a].name;
-				}
-			}
-		}
-
-		if(!fileExists)
-		{
+			// find out if asset file name already exists:
+			var fileExists: Bool = false;
 			if(ncs_1.canvas_1.assets != null)
 			{
-				// create smallest possible id:
-				var idExists: Bool = false;
-				for(b in 0...128)
+				for(a in 0...ncs_1.canvas_1.assets.length)
 				{
-					for(c in 0...ncs_1.canvas_1.assets.length)
+					if(ncs_1.canvas_1.assets[a].file == asset_0.file)
 					{
-						if(ncs_1.canvas_1.assets[c].id == b) idExists = true;
+						fileExists = true;
+						element_0.asset = ncs_1.canvas_1.assets[a].name;
 					}
-					if(!idExists)
-					{
-						asset_0.id = b;
-						asset_0.name = "asset_" + asset_0.id;
-						break;
-					}
-					idExists = false;
 				}
 			}
-			else
+			if(!fileExists)
 			{
-				asset_0.id = 0;
-				asset_0.name = "asset_0";
-				ncs_1.canvas_1.assets = new Array<Tasset>();
+				if(ncs_1.canvas_1.assets != null)
+				{
+					// create smallest possible id:
+					var idExists: Bool = false;
+					for(b in 0...128)
+					{
+						for(c in 0...ncs_1.canvas_1.assets.length)
+						{
+							if(ncs_1.canvas_1.assets[c].id == b) idExists = true;
+						}
+						if(!idExists)
+						{
+							asset_0.id = b;
+							asset_0.name = "asset_" + asset_0.id;
+							break;
+						}
+						idExists = false;
+					}
+				}
+				else
+				{
+					asset_0.id = 0;
+					asset_0.name = "asset_0";
+					ncs_1.canvas_1.assets = new Array<Tasset>();
+				}
+				element_0.asset = asset_0.name;
+				ncs_1.canvas_1.assets.push(asset_0);
 			}
-			element_0.asset = asset_0.name;
-			ncs_1.canvas_1.assets.push(asset_0);
 		}
 		
 		if(ncs_1.canvas_1.elements != null)
@@ -146,7 +103,7 @@ class ItemOps // static
 				if(!idExists)
 				{
 					element_0.id = d;
-					element_0.name = "element_" + element_0.id;
+					if(element_0.name == null) element_0.name = "element_" + element_0.id;
 					break;
 				}
 				idExists = false;
@@ -155,29 +112,40 @@ class ItemOps // static
 		else
 		{
 			element_0.id = 0;
-			element_0.name = "element_0";
+			if(element_0.name == null) element_0.name = "element_0";
 			ncs_1.canvas_1.elements = new Array<Telement>();
 		}
 
 		ncs_1.canvas_1.elements.push(element_0);
 
-		iron.data.Data.getFont("C:/Windows/Fonts/Arial.ttf", function(f: kha.Font)
+		iron.data.Data.getFont("C:/Windows/Fonts/Gothic.ttf", function(f: kha.Font)
 		{
 			ncs_1.zui_options_1 = {font: f, theme: zui.Themes.light};
 
 			if(ncs_1.zui_1 == null) ncs_1.zui_1 = new Zui(ncs_1.zui_options_1);
 
-			iron.data.Data.getImage(asset_0.file, function(image: kha.Image)
+			if(asset_0 != null)
 			{
-				ncs_1.setAsset(asset_0, image);
-			});
+				iron.data.Data.getImage(asset_0.file, function(image: kha.Image)
+				{
+					ncs_1.setAsset(asset_0, image);
+				});
+			}
 		});
 	}
 
-	public static function popItems(idToPush: Int, canvas_1: Tcanvas): Tcanvas
+	public static function popItems(ncs_1: NewCanvasScript, nameToPop: String): Bool
 	{
-		// get item pos...
-		return null;
+		var removed: Bool = false;
+		for(a in 0...ncs_1.canvas_1.elements.length)
+		{
+			if(ncs_1.canvas_1.elements[a].name == nameToPop)
+			{
+				removed = ncs_1.canvas_1.elements.remove(ncs_1.canvas_1.elements[a]);
+				break;
+			}
+		}
+		return removed;
 	}
 
 	static function getItemPos(nameToLocate, canvas_1): Int
