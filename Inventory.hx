@@ -79,24 +79,31 @@ class Inventory extends Sight
 			}
 		}
 
-		ncs_1.canvas_1.elements.remove(descriptionBox);
-		ncs_1.canvas_1.elements.push(descriptionBox);
-
 		ncs_1.canvas_1.elements.remove(itemDescription);
-		ncs_1.canvas_1.elements.push(itemDescription);
+		ncs_1.canvas_1.elements.remove(descriptionBox);
 
-		if(Input.getMouse().down("right"))
+		if(Input.getMouse().down() || Input.getMouse().down("right"))
 		{
-			ncs_1.canvas_1.elements.remove(itemDescription);
-			ncs_1.canvas_1.elements.remove(descriptionBox);
+			/*for(a in 0...ncs_1.canvas_1.elements.length)
+			{
+				if(ncs_1.canvas_1.elements[a].type == DragAble)
+				{
+					for(b in 0...ncs_1.canvas_1.elements.length)
+					{
+						if(ncs_1.canvas_1.elements[b].name == "select")
+						{
+							ncs_1.canvas_1.elements[b].x = ncs_1.canvas_1.elements[a].x;
+							ncs_1.canvas_1.elements[b].y = ncs_1.canvas_1.elements[a].y;
+						}
+					}
+				}
+			}*/
 			return;
 		}
-
-		else if(Input.getMouse().down())
+		else
 		{
-			ncs_1.canvas_1.elements.remove(itemDescription);
-			ncs_1.canvas_1.elements.remove(descriptionBox);
-			return;
+			ncs_1.canvas_1.elements.push(descriptionBox);
+			ncs_1.canvas_1.elements.push(itemDescription);
 		}
 
 		var mouseX = Input.getMouse().lastX;

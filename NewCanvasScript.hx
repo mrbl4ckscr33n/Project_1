@@ -72,7 +72,6 @@ class NewCanvasScript extends iron.Trait
 
 	static public function draw(zui_1: Zui, canvas: Tcanvas, g: kha.graphics2.Graphics): Array<String>
 	{
-		trace(canvas.elements);
 		screenW = kha.System.windowWidth();
 		screenH = kha.System.windowHeight();
 	
@@ -348,6 +347,15 @@ class NewCanvasScript extends iron.Trait
 								{
 									if((canvas.elements[h].x == canvas.elements[a].x) && (canvas.elements[h].y == canvas.elements[a].y) && (canvas.elements[h].id != canvas.elements[a].id) && (canvas.elements[a].type == DragAble))
 									{
+										canvas.elements[h].x = canvas.elements[a].x;
+										canvas.elements[h].y = canvas.elements[a].y;
+										canvas.elements[a].x = canvas.elements[h].lastX;
+										canvas.elements[a].y = canvas.elements[h].lastY;
+
+										canvas.elements[h].lastX = canvas.elements[h].x;
+										canvas.elements[h].lastY = canvas.elements[h].y;
+										canvas.elements[a].lastX = canvas.elements[a].x;
+										canvas.elements[a].lastY = canvas.elements[a].y;
 										used = true;
 										break;
 									}
@@ -356,11 +364,6 @@ class NewCanvasScript extends iron.Trait
 								{
 									canvas.elements[h].lastX = canvas.elements[h].x;
 									canvas.elements[h].lastY = canvas.elements[h].y;
-								}
-								else
-								{
-									canvas.elements[h].x = canvas.elements[h].lastX;
-									canvas.elements[h].y = canvas.elements[h].lastY;
 								}
 							}
 						}
