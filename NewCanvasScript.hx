@@ -20,10 +20,10 @@ class NewCanvasScript extends iron.Trait
 
 	public var zui_1: Zui;
 	public var zui_options_1: ZuiOptions;
-	public var canvas_1: Tcanvas = {name: "canvas_1", x: 0, y: 0, width: 1920, height: 1080, elements: null, theme: "Default Light", assets: null};
+	public var canvas_array: Array<Tcanvas> = new Array<Tcanvas>();
 	
 	public var ready(get, null): Bool;
-	function get_ready(): Bool { return canvas_1 != null; }
+	function get_ready(): Bool { for(a in 0...canvas_array.length) { if(canvas_array[a] == null) { return false; } } return true; }
 	
 	public static var assetMap = new Map<Int, Dynamic>(); // kha.Image | kha.Font
 	public static var themes = new Array<zui.Themes.TTheme>();
@@ -40,25 +40,29 @@ class NewCanvasScript extends iron.Trait
 	
 		callOnRender2D(function(g: kha.graphics2.Graphics)
 		{
-			if (canvas_1 == null || canvas_1.elements == null || zui_1 == null) return;
-
-			//canvas_1.width = kha.System.windowWidth()
-			//canvas_1.height = kha.System.windowHeight()
-			//setCanvasDimensions(kha.System.windowWidth(), kha.System.windowHeight());
-
-			var eventNameArray = draw(zui_1, canvas_1, g);
-	
-			for (e in eventNameArray)
+			for(a in 0...canvas_array.length)
 			{
-				var eventArray = armory.system.Event.get(e);
-				if (eventArray != null)
+				if (canvas_array[a] == null || canvas_array[a].elements == null || zui_1 == null) return;
+
+				//canvas_array[0].width = kha.System.windowWidth()
+				//canvas_array[0].height = kha.System.windowHeight()
+				//setCanvasDimensions(kha.System.windowWidth(), kha.System.windowHeight());
+
+				var eventNameArray = draw(zui_1, canvas_array[a], g);
+		
+				for (e in eventNameArray)
 				{
-					for (event in eventArray)
+					var eventArray = armory.system.Event.get(e);
+					if (eventArray != null)
 					{
-						event.onEvent();
+						for (event in eventArray)
+						{
+							event.onEvent();
+						}
 					}
 				}
 			}
+
 		});
 	}
 
@@ -454,7 +458,7 @@ class NewCanvasScript extends iron.Trait
 		return null;
 	}
 
-	public function setCanvasVisibility(visible: Bool)
+	public function setCanvasVisibility(canvas_1: Tcanvas, visible: Bool)
 	{ 
 		if(canvas_1.elements == null) return;
 		for(i in 0...canvas_1.elements.length)
