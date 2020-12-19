@@ -107,11 +107,11 @@ class Inventory extends iron.Trait
 
 	function update3DItems()
 	{
-		var leftContainerFull = false;
-		var rightContainerFull = false;
-
 		var leftHand = Scene.active.getChild("LeftHand");
 		var rightHand = Scene.active.getChild("RightHand");
+
+		var itemInRightHand: Bool = false;
+		var itemInLeftHand: Bool = false;
 
 		for (a in 0...ncs_1.canvas_array[0].elements.length)
 		{
@@ -123,11 +123,18 @@ class Inventory extends iron.Trait
 					{
 						if(ncs_1.canvas_array[0].elements[a].asset == ncs_1.canvas_array[0].assets[b].name)
 						{
+							trace("is in container");
+							itemInLeftHand = true;
 							var nameToSpawn = ncs_1.canvas_array[0].assets[b].file.substring(0,1).toUpperCase() + ncs_1.canvas_array[0].assets[b].file.substring(1);
-							leftContainerFull = true;
 
+							if((leftHand.getChildren()[0] != null) && (leftHand.getChildren()[0].name != nameToSpawn))
+							{
+								// delete whatever is in the left hand
+								leftHand.getChildren()[0].remove();
+							}
 							if(leftHand.getChildren()[0] == null)
 							{
+								// spawn the object in the left hand
 								iron.Scene.active.spawnObject(nameToSpawn, null, function(o: Object)
 								{
 									o.getTrait(RigidBody).removeFromWorld();
@@ -145,11 +152,17 @@ class Inventory extends iron.Trait
 					{
 						if(ncs_1.canvas_array[0].elements[a].asset == ncs_1.canvas_array[0].assets[b].name)
 						{
+							itemInRightHand = true;
 							var nameToSpawn = ncs_1.canvas_array[0].assets[b].file.substring(0,1).toUpperCase() + ncs_1.canvas_array[0].assets[b].file.substring(1);
-							rightContainerFull = true;
 
+							if((rightHand.getChildren()[0] != null) && (rightHand.getChildren()[0].name != nameToSpawn))
+							{
+								// delete whatever is in the right hand
+								rightHand.getChildren()[0].remove();
+							}
 							if(rightHand.getChildren()[0] == null)
 							{
+								// spawn the object in the right hand
 								iron.Scene.active.spawnObject(nameToSpawn, null, function(o: Object)
 								{
 									o.getTrait(RigidBody).removeFromWorld();
@@ -162,22 +175,14 @@ class Inventory extends iron.Trait
 				}
 			}
 		}
-
-		if(!leftContainerFull)
+		if((!itemInLeftHand) && (leftHand.getChildren()[0] != null))
 		{
-			if(leftHand.getChildren()[0] != null)
-			{
-				leftHand.getChildren()[0].remove();
-				trace("lol");
-			}
+			trace("removed");
+			leftHand.getChildren()[0].remove();
 		}
-		if(!rightContainerFull)
+		if((!itemInRightHand) && (rightHand.getChildren()[0] != null))
 		{
-			if(rightHand.getChildren()[0] != null)
-			{
-				trace("lol");
-				rightHand.getChildren()[0].remove();
-			}
+			rightHand.getChildren()[0].remove();
 		}
 	}
 
