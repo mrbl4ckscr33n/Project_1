@@ -8,27 +8,36 @@ import iron.Trait;
 import iron.Scene;
 import iron.system.Input;
 import iron.math.Vec4;
+import iron.math.Quat;
 import armory.trait.physics.bullet.RigidBody;
 import armory.trait.physics.bullet.PhysicsWorld;
+import Math;
+import kha.FastFloat;
 
 class Movement extends Trait
 {
 	var body: RigidBody;
 	var rotationSpeed = 1;
 	var speed = 0.1;
-	var ground_b = new Vec4(0, 0, 0);
-	var ground_f = new Vec4(0, 0, 0);
-	var ground_r = new Vec4(0, 0, 0);
-	var ground_l = new Vec4(0, 0, 0); // position of the end of the vector that checks if player touching the ground
-	var rayf : Hit;
-	var rayb : Hit;
-	var rayl : Hit;
-	var rayr : Hit;
+	//var ground_b = new Vec4(0, 0, 0);
+	//var ground_f = new Vec4(0, 0, 0);
+	//var ground_r = new Vec4(0, 0, 0);
+	//var ground_l = new Vec4(0, 0, 0); // position of the end of the vector that checks if player touching the ground
+	//var rayf : Hit;
+	//var rayb : Hit;
+	//var rayl : Hit;
+	//var rayr : Hit;
 
-	var l:String;
-	var r:String;
-	var f:String;
-	var b:String;
+	//var l:String;
+	//var r:String;
+	//var f:String;
+	//var b:String;
+
+	var posVec: Vec4 = new Vec4(0,0,0);
+	var dirVec: Vec4 = new Vec4(0,0,0);
+
+	var contactProbe = new Vec4(0,0,0);
+	var rayCastProbe: Hit = null;
 
 	var a : Int = 0;
 
@@ -63,26 +72,29 @@ class Movement extends Trait
 	{
 		if(PhysicsWorld.active.getContacts(object.getTrait(RigidBody)) != null) // change direction only when touching the ground
 		{
-			current_dir.set(0, 0, 0);
+			if(PhysicsWorld.active.getContacts(object.getTrait(RigidBody))[0] != null)
+			{
+				current_dir.set(0, 0, 0);
 
-			if ((Input.getKeyboard().down("shift")) && (a != 1)) speed = 0.1;
-			else if (a != 1) speed = 0.05;
+				if ((Input.getKeyboard().down("shift")) && (a != 1)) speed = 0.1;
+				else if (a != 1) speed = 0.05;
 
-			if (Input.getKeyboard().down("w"))
-			{
-				current_dir = object.transform.look();
-			}
-			else if (Input.getKeyboard().down("s"))
-			{
-				current_dir = current_dir.addvecs(current_dir, object.transform.look().mult(-1)); // all inputs are added together
-			}
-			if (Input.getKeyboard().down("d"))
-			{
-				current_dir = current_dir.addvecs(current_dir, object.transform.right());
-			}
-			else if (Input.getKeyboard().down("a"))
-			{
-				current_dir = current_dir.addvecs(current_dir, object.transform.right().mult(-1));
+				if (Input.getKeyboard().down("w"))
+				{
+					current_dir = object.transform.look();
+				}
+				else if (Input.getKeyboard().down("s"))
+				{
+					current_dir = current_dir.addvecs(current_dir, object.transform.look().mult(-1)); // all inputs are added together
+				}
+				if (Input.getKeyboard().down("d"))
+				{
+					current_dir = current_dir.addvecs(current_dir, object.transform.right());
+				}
+				else if (Input.getKeyboard().down("a"))
+				{
+					current_dir = current_dir.addvecs(current_dir, object.transform.right().mult(-1));
+				}
 			}
 		}
 
@@ -96,7 +108,7 @@ class Movement extends Trait
 
 	function jumping()
 	{	
-		ground_f.x = object.transform.loc.x;
+		/*ground_f.x = object.transform.loc.x;
 		ground_f.y = object.transform.loc.y + 0.8;
 		ground_f.z = object.transform.loc.z; //distance from middle of body to ground P
 
@@ -122,9 +134,53 @@ class Movement extends Trait
 		if (Input.getKeyboard().started("space") && ((rayf == null) && (rayb == null) && (rayr == null) && (rayl == null)) && PhysicsWorld.active.getContacts(body)[0] != null)
 		{
 			body.applyImpulse(new Vec4(0, 0, 5));
+		}*/
+
+		posVec.x = object.transform.loc.x;
+		posVec.y = object.transform.loc.y;
+		posVec.z = object.transform.loc.z;
+
+		dirVec.x = object.transform.loc.x;
+		dirVec.y = object.transform.loc.y;
+		dirVec.z = object.transform.loc.z - 1.4;
+
+		if(PhysicsWorld.active.rayCast(posVec, dirVec) != null)
+		{
+			//trace("hasRayCast");
+			rayCastProbe = PhysicsWorld.active.rayCast(posVec, dirVec);
+
+			if(PhysicsWorld.active.getContacts(object.getTrait(RigidBody)) != null)
+			{
+				if(PhysicsWorld.active.getContacts(object.getTrait(RigidBody))[0] != null)
+				{
+					/*//trace("hasContact");
+					// create normal vector:
+					var normalVector: Quat = new Quat(0,0,0);
+					normalVector.x = rayCastProbe.normal.x;
+					normalVector.y = rayCastProbe.normal.y;
+					normalVector.z = rayCastProbe.normal.z;
+					
+					// calculate angle of the surface the player is standing on:
+					var angle: FastFloat = normalVector.toAxisAngle(new Vec4(0,0,1));
+					trace(PhysicsWorld.active.rayCast(posVec, dirVec).normal);
+					trace(angle);*/
+
+					var zAxis = new Vec4(0,0,1);
+					var normal = PhysicsWorld.active.rayCast(posVec, dirVec).normal;
+					//var angle = zAxis.toAxisAngle(PhysicsWorld.active.rayCast(posVec, dirVec).normal);
+					var angle = (Math.acos(normal.dot(zAxis)) * 180) / Math.PI;
+
+					if((Input.getKeyboard().started("space")) && (angle < 45))
+					{
+						body.applyImpulse(new Vec4(0, 0, 5));
+					}
+				}
+
+			}
+			//else trace("noContact");
 		}
 
-		if (Input.getKeyboard().started("b"))
+		/*if (Input.getKeyboard().started("b"))
 		{
 			if (rayl != null) l = "true-l";
 			if (rayr != null) r = "true-r";
@@ -142,12 +198,12 @@ class Movement extends Trait
 		l = "false-l";
 		r = "false-r";
 		f = "false-f";
-		b = "false-b";
+		b = "false-b";*/
 	}
 
 	function crouching()
 	{
-		switch (a) 
+		/*switch (a) 
 		{
 			case 0:
 				speed = 0.025;
@@ -181,6 +237,6 @@ class Movement extends Trait
 				//body.btshape.setLocalScaling(new Vector3(1, 1, 1));
 				//object.transform.scale.set(1,1,1);
 				//object.transform.move(new Vec4(0,0,0.5));
-		}
+		}*/
 	}
 }
