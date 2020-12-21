@@ -1,5 +1,6 @@
 package arm;
 
+import kha.graphics4.hxsl.Types.Vec;
 import bullet.Bt.Vector3;
 import bullet.Bt.WheelInfoConstructionInfo;
 import js.html.LabelElement;
@@ -37,7 +38,6 @@ class Movement extends Trait
 	var dirVec: Vec4 = new Vec4(0,0,0);
 
 	var contactProbe = new Vec4(0,0,0);
-	var rayCastProbe: Hit = null;
 
 	var a : Int = 0;
 
@@ -136,48 +136,38 @@ class Movement extends Trait
 			body.applyImpulse(new Vec4(0, 0, 5));
 		}*/
 
-		posVec.x = object.transform.loc.x;
+		/*posVec.x = object.transform.loc.x;
 		posVec.y = object.transform.loc.y;
 		posVec.z = object.transform.loc.z;
 
 		dirVec.x = object.transform.loc.x;
 		dirVec.y = object.transform.loc.y;
-		dirVec.z = object.transform.loc.z - 1.4;
+		dirVec.z = object.transform.loc.z - 5;*/
 
-		if(PhysicsWorld.active.rayCast(posVec, dirVec) != null)
+		if(PhysicsWorld.active.getContactPairs(object.getTrait(RigidBody)) != null)
 		{
-			//trace("hasRayCast");
-			rayCastProbe = PhysicsWorld.active.rayCast(posVec, dirVec);
+			var contactPair_1: Array<ContactPair> = PhysicsWorld.active.getContactPairs(object.getTrait(RigidBody));
 
-			if(PhysicsWorld.active.getContacts(object.getTrait(RigidBody)) != null)
+			if(contactPair_1 != null)
 			{
-				if(PhysicsWorld.active.getContacts(object.getTrait(RigidBody))[0] != null)
+				var zAxis = new Vec4(0,0,1);
+				var smallestAngleOfContact: Float = 999; // in case you touch eg. a wall and the floor simultaniously
+
+				for (i in 0...contactPair_1.length)
 				{
-					/*//trace("hasContact");
-					// create normal vector:
-					var normalVector: Quat = new Quat(0,0,0);
-					normalVector.x = rayCastProbe.normal.x;
-					normalVector.y = rayCastProbe.normal.y;
-					normalVector.z = rayCastProbe.normal.z;
-					
-					// calculate angle of the surface the player is standing on:
-					var angle: FastFloat = normalVector.toAxisAngle(new Vec4(0,0,1));
-					trace(PhysicsWorld.active.rayCast(posVec, dirVec).normal);
-					trace(angle);*/
-
-					var zAxis = new Vec4(0,0,1);
-					var normal = PhysicsWorld.active.rayCast(posVec, dirVec).normal;
-					//var angle = zAxis.toAxisAngle(PhysicsWorld.active.rayCast(posVec, dirVec).normal);
-					var angle = (Math.acos(normal.dot(zAxis)) * 180) / Math.PI;
-
-					if((Input.getKeyboard().started("space")) && (angle < 45))
+					if(PhysicsWorld.active.getContactPairs(object.getTrait(RigidBody))[i] != null)
 					{
-						body.applyImpulse(new Vec4(0, 0, 5));
+						var normal: Vec4 = contactPair_1[i].normOnB;
+						var angle: Float = (Math.acos(normal.dot(zAxis)) * 180) / Math.PI;
+
+						if(angle < smallestAngleOfContact) smallestAngleOfContact = angle;
 					}
 				}
-
+				if((Input.getKeyboard().started("space")) && (smallestAngleOfContact < 45))
+				{
+					body.applyImpulse(new Vec4(0, 0, 5));
+				}
 			}
-			//else trace("noContact");
 		}
 
 		/*if (Input.getKeyboard().started("b"))
