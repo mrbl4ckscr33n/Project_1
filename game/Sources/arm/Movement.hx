@@ -59,6 +59,9 @@ class Movement extends Trait
 			walking();
 			jumping();
 			look_horizontally();
+
+			body.transform.buildMatrix();
+			body.syncTransform();
 		});
 	}
 
@@ -193,32 +196,31 @@ class Movement extends Trait
 
 	function crouching()
 	{
-		/*switch (a) 
+		switch (a) 
 		{
 			case 0:
 				speed = 0.025;
 				a = 1;
-				
-				
-				//body.transform.scale.set(0.8,0.8,0.8);
-				//object.transform.scale.set(0.8, 0.8, 0.8);
-				body.btshape.setLocalScaling(new Vector3(0.8, 0.8, 0.8));
-				//body.body.setCcdMotionThreshold(0);
+
+				body.btshape.setLocalScaling(new Vector3(0.1, 0.1, 0.1));
+				//object.transform.scale.set(0.1, 0.1, 0.1);
 				body.transform.buildMatrix();
 				body.syncTransform();
 				body.activate();
 				body.transform.update();
 
-				object.transform.move(new Vec4(0,0,-0.2));
+				/*object.transform.move(new Vec4(0,0,-0.2));
 
 				body.transform.buildMatrix();
 				body.syncTransform();
 				body.activate();
-				body.transform.update();
+				body.transform.update();*/
 
 			case 1:
 				a = 0;
-				object.transform.scale.set(1, 1, 1);
+				body.btshape.setLocalScaling(new Vector3(1,1,1));
+				//object.transform.scale.set(1, 1, 1);
+				object.transform.move(new Vec4(0,0,2));
 				body.transform.buildMatrix();
 				body.syncTransform();
 				body.activate();
@@ -227,6 +229,6 @@ class Movement extends Trait
 				//body.btshape.setLocalScaling(new Vector3(1, 1, 1));
 				//object.transform.scale.set(1,1,1);
 				//object.transform.move(new Vec4(0,0,0.5));
-		}*/
+		}
 	}
 }

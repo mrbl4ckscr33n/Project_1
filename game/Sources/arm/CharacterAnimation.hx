@@ -16,12 +16,15 @@ class CharacterAnimation extends iron.Trait
 	var timeOnChange: FastFloat = 0;
 	var length: FastFloat = 0;
 
+	var transition: FastFloat = 0;
+
 	var w: Bool;
 	var s: Bool;
 	var shift: Bool;
 	var space: Bool;
 
-	public function new() {
+	public function new()
+	{
 		super();
 		
 		notifyOnInit(function()
@@ -41,7 +44,7 @@ class CharacterAnimation extends iron.Trait
 				if(space)
 				{
 					object.animation.loop = false;
-					object.animation.speed = 2;
+					object.animation.speed = 1;
 
 					if(w || s)
 					{
@@ -49,14 +52,14 @@ class CharacterAnimation extends iron.Trait
 						{
 							length = 2;
 							timeOnChange = Time.time();
-							object.animation.play("jump_jog", 0.5);
+							object.animation.play("jump_jog", transition);
 						}
 					}
-					else if(object.animation.action != "jump_idle")
+					else if(object.animation.action != "jump_idle_2")
 					{
-						length = 4/6;
+						length = 1/3;
 						timeOnChange = Time.time();
-						object.animation.play("jump_idle", 0.5);
+						object.animation.play("jump_idle_2", transition);
 					}
 				}
 				else
@@ -68,16 +71,25 @@ class CharacterAnimation extends iron.Trait
 
 					if(w || s)
 					{
-						if(w) object.animation.speed = 2;
-						else object.animation.speed = -2;
+						if(w) object.animation.speed = 1;
+						else object.animation.speed = -1;
 
 						if(shift)
 						{
-							if(object.animation.action != "jog") object.animation.play("jog", 0.5);
+							length = 2/3;
+							if(object.animation.action != "jog") object.animation.play("jog", transition);
 						}
-						else if(object.animation.action != "walk") object.animation.play("walk", 0.5);
+						else if(object.animation.action != "walk")
+						{
+							length = 2;
+							object.animation.play("walk", transition);
+						}
 					}
-					else if(object.animation.action != "idle") object.animation.play("idle", 0.5);
+					else if(object.animation.action != "idle")
+					{
+						length = 1;
+						object.animation.play("idle", transition);
+					}
 					
 					object.animation.time = currentTime;
 					object.animation.frameIndex = currentFrame;

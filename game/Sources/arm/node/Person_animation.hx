@@ -17,7 +17,7 @@ package arm.node;
 		var _PlayActionFrom = new armory.logicnode.PlayActionFromNode(this);
 		var _InvertOutput = new armory.logicnode.InverseNode(this);
 		var _Keyboard = new armory.logicnode.MergedKeyboardNode(this);
-		_Keyboard.property0 = "Down";
+		_Keyboard.property0 = "started";
 		_Keyboard.property1 = "w";
 		var _SetActionSpeed = new armory.logicnode.SetActionSpeedNode(this);
 		_SetActionSpeed.addInput(_Keyboard, 0);
