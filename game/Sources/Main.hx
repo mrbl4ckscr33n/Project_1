@@ -2,7 +2,7 @@
 package ;
 class Main {
     public static inline var projectName = 'BESTGAME';
-    public static inline var projectVersion = '1.0.0';
+    public static inline var projectVersion = '1.0.1';
     public static inline var projectPackage = 'arm';
     public static function main() {
         iron.object.BoneAnimation.skinMaxBones = 55;
@@ -14,8 +14,8 @@ class Main {
             false,
             true,
             false,
-            1920,
-            1080,
+            600,
+            600,
             1,
             true,
             armory.renderpath.RenderPathCreator.get

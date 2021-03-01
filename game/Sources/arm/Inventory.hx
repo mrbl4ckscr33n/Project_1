@@ -305,7 +305,7 @@ class Inventory extends iron.Trait
 			
 			// get look vector (3m long):
 			currentDir = object.transform.up();
-			currentDir.mult(-3);
+			currentDir.mult(-6);
 
 			pickUpHit = PhysicsWorld.active.rayCast(currentLoc, currentDir.add(currentLoc));
 			pickedUp = true;

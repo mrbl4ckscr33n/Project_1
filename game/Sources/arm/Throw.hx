@@ -1,5 +1,6 @@
 package arm;
 
+import kha.math.Vector4;
 import iron.math.Quat;
 import kha.graphics4.hxsl.Types.Vec;
 import kha.Color;
@@ -24,6 +25,10 @@ class Throw extends iron.Trait
 {
 	var look = new Vec4();
 
+	var fromVec = new Vec4(0,1,0); // standard look vector
+	var toVec = new Vec4();
+	var finalRot = new Quat();
+
 	public function new()
 	{
 		super();
@@ -38,8 +43,6 @@ class Throw extends iron.Trait
 				var player = Scene.active.getChild("Player").transform;
 				var camera = Scene.active.getChild("Camera").transform;
 
-				//trace(camera.rot.getEuler().x * (180/3.14));
-				//trace(player.rot.getEuler().z * (180/3.14));
 				trace("helo");
 
 				iron.Scene.active.spawnObject("Spear", null, function(o: Object)
@@ -56,7 +59,12 @@ class Throw extends iron.Trait
 					look.mult(10);
 
 					// rotate spear:
-					o.transform.rot.multquats(player.rot, camera.rot);
+
+					toVec.setFrom(camera.up().mult(-1));
+
+					finalRot.fromTo(fromVec.normalize(), toVec.normalize());
+
+					o.transform.rot.setFrom(finalRot);
 					
 					// sync:
 					o.transform.buildMatrix();
