@@ -71,7 +71,7 @@ class Inventory extends iron.Trait
 		{
 			Input.getMouse().lock();
 
-			iron.data.Data.getFont("Gothic.ttf", function(f: kha.Font)
+			iron.data.Data.getFont("font_default.ttf", function(f: kha.Font)
 			{
 				ncs_1.zui_options_1 = {font: f, theme: zui.Themes.light};
 				if(ncs_1.zui_1 == null) ncs_1.zui_1 = new Zui(ncs_1.zui_options_1);

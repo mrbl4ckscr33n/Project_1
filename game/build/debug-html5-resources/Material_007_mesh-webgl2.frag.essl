@@ -1,0 +1,113 @@
+#version 300 es
+precision mediump float;
+precision highp int;
+
+uniform highp sampler2D ImageTexture;
+
+in highp vec3 wnormal;
+in highp vec2 texCoord;
+out highp vec4 fragColor[2];
+
+highp vec3 brightcontrast(highp vec3 col, highp float bright, highp float contr)
+{
+    highp float a = 1.0 + contr;
+    highp float b = bright - (contr * 0.5);
+    return max((col * a) + vec3(b), vec3(0.0));
+}
+
+highp vec2 octahedronWrap(highp vec2 v)
+{
+    return (vec2(1.0) - abs(v.yx)) * vec2((v.x >= 0.0) ? 1.0 : (-1.0), (v.y >= 0.0) ? 1.0 : (-1.0));
+}
+
+highp float packFloatInt16(highp float f, uint i)
+{
+    return (0.06248569488525390625 * f) + (0.06250095367431640625 * float(i));
+}
+
+highp float packFloat2(highp float f1, highp float f2)
+{
+    return floor(f1 * 255.0) + min(f2, 0.9900000095367431640625);
+}
+
+void main()
+{
+    highp vec3 n = normalize(wnormal);
+    highp vec4 ImageTexture_texread_store = texture(ImageTexture, texCoord);
+    highp vec3 _104 = pow(ImageTexture_texread_store.xyz, vec3(2.2000000476837158203125));
+    ImageTexture_texread_store = vec4(_104.x, _104.y, _104.z, ImageTexture_texread_store.w);
+    highp vec3 ImageTexture_Color_res = ImageTexture_texread_store.xyz;
+    highp vec3 Bright_Contrast_Color_res = brightcontrast(ImageTexture_Color_res, 0.0, -0.2999999821186065673828125);
+    highp float RGBCurves0_ys[3];
+    RGBCurves0_ys[0] = 0.0;
+    RGBCurves0_ys[1] = 0.781250655651092529296875;
+    RGBCurves0_ys[2] = 1.0;
+    highp float RGBCurves0_fac = Bright_Contrast_Color_res.x;
+    int RGBCurves0_i = (0 + int(RGBCurves0_fac > 0.4045455455780029296875)) + int(RGBCurves0_fac > 1.0);
+    highp float RGBCurves0_xs[3];
+    RGBCurves0_xs[0] = 0.0;
+    RGBCurves0_xs[1] = 0.4045455455780029296875;
+    RGBCurves0_xs[2] = 1.0;
+    highp float RGBCurves1_ys[3];
+    RGBCurves1_ys[0] = 0.0;
+    RGBCurves1_ys[1] = 0.55624973773956298828125;
+    RGBCurves1_ys[2] = 1.0;
+    highp float RGBCurves1_fac = Bright_Contrast_Color_res.y;
+    int RGBCurves1_i = (0 + int(RGBCurves1_fac > 0.368182003498077392578125)) + int(RGBCurves1_fac > 1.0);
+    highp float RGBCurves1_xs[3];
+    RGBCurves1_xs[0] = 0.0;
+    RGBCurves1_xs[1] = 0.368182003498077392578125;
+    RGBCurves1_xs[2] = 1.0;
+    highp float RGBCurves2_ys[2];
+    RGBCurves2_ys[0] = 0.0;
+    RGBCurves2_ys[1] = 1.0;
+    highp float RGBCurves2_fac = Bright_Contrast_Color_res.z;
+    int RGBCurves2_i = 0 + int(RGBCurves2_fac > 1.0);
+    highp float RGBCurves2_xs[2];
+    RGBCurves2_xs[0] = 0.0;
+    RGBCurves2_xs[1] = 1.0;
+    highp float RGBCurves3a_ys[2];
+    RGBCurves3a_ys[0] = 0.0;
+    RGBCurves3a_ys[1] = 1.0;
+    highp float RGBCurves3a_fac = Bright_Contrast_Color_res.x;
+    int RGBCurves3a_i = 0 + int(RGBCurves3a_fac > 1.0);
+    highp float RGBCurves3a_xs[2];
+    RGBCurves3a_xs[0] = 0.0;
+    RGBCurves3a_xs[1] = 1.0;
+    highp float RGBCurves3b_ys[2];
+    RGBCurves3b_ys[0] = 0.0;
+    RGBCurves3b_ys[1] = 1.0;
+    highp float RGBCurves3b_fac = Bright_Contrast_Color_res.y;
+    int RGBCurves3b_i = 0 + int(RGBCurves3b_fac > 1.0);
+    highp float RGBCurves3b_xs[2];
+    RGBCurves3b_xs[0] = 0.0;
+    RGBCurves3b_xs[1] = 1.0;
+    highp float RGBCurves3c_ys[2];
+    RGBCurves3c_ys[0] = 0.0;
+    RGBCurves3c_ys[1] = 1.0;
+    highp float RGBCurves3c_fac = Bright_Contrast_Color_res.z;
+    int RGBCurves3c_i = 0 + int(RGBCurves3c_fac > 1.0);
+    highp float RGBCurves3c_xs[2];
+    RGBCurves3c_xs[0] = 0.0;
+    RGBCurves3c_xs[1] = 1.0;
+    highp vec3 RGBCurves_Color_res = sqrt(vec3(mix(RGBCurves0_ys[RGBCurves0_i], RGBCurves0_ys[RGBCurves0_i + 1], (RGBCurves0_fac - RGBCurves0_xs[RGBCurves0_i]) * (1.0 / (RGBCurves0_xs[RGBCurves0_i + 1] - RGBCurves0_xs[RGBCurves0_i]))), mix(RGBCurves1_ys[RGBCurves1_i], RGBCurves1_ys[RGBCurves1_i + 1], (RGBCurves1_fac - RGBCurves1_xs[RGBCurves1_i]) * (1.0 / (RGBCurves1_xs[RGBCurves1_i + 1] - RGBCurves1_xs[RGBCurves1_i]))), mix(RGBCurves2_ys[RGBCurves2_i], RGBCurves2_ys[RGBCurves2_i + 1], (RGBCurves2_fac - RGBCurves2_xs[RGBCurves2_i]) * (1.0 / (RGBCurves2_xs[RGBCurves2_i + 1] - RGBCurves2_xs[RGBCurves2_i])))) * vec3(mix(RGBCurves3a_ys[RGBCurves3a_i], RGBCurves3a_ys[RGBCurves3a_i + 1], (RGBCurves3a_fac - RGBCurves3a_xs[RGBCurves3a_i]) * (1.0 / (RGBCurves3a_xs[RGBCurves3a_i + 1] - RGBCurves3a_xs[RGBCurves3a_i]))), mix(RGBCurves3b_ys[RGBCurves3b_i], RGBCurves3b_ys[RGBCurves3b_i + 1], (RGBCurves3b_fac - RGBCurves3b_xs[RGBCurves3b_i]) * (1.0 / (RGBCurves3b_xs[RGBCurves3b_i + 1] - RGBCurves3b_xs[RGBCurves3b_i]))), mix(RGBCurves3c_ys[RGBCurves3c_i], RGBCurves3c_ys[RGBCurves3c_i + 1], (RGBCurves3c_fac - RGBCurves3c_xs[RGBCurves3c_i]) * (1.0 / (RGBCurves3c_xs[RGBCurves3c_i + 1] - RGBCurves3c_xs[RGBCurves3c_i]))))) * 1.0;
+    highp vec3 basecol = RGBCurves_Color_res;
+    highp float roughness = 0.281818211078643798828125;
+    highp float metallic = 0.35454547405242919921875;
+    highp float occlusion = 1.0;
+    highp float specular = 0.5;
+    n /= vec3((abs(n.x) + abs(n.y)) + abs(n.z));
+    highp vec2 _395;
+    if (n.z >= 0.0)
+    {
+        _395 = n.xy;
+    }
+    else
+    {
+        _395 = octahedronWrap(n.xy);
+    }
+    n = vec3(_395.x, _395.y, n.z);
+    fragColor[0] = vec4(n.xy, roughness, packFloatInt16(metallic, 0u));
+    fragColor[1] = vec4(basecol, packFloat2(occlusion, specular));
+}
+

@@ -1,0 +1,14 @@
+#version 100
+#extension GL_EXT_shader_texture_lod : require
+precision mediump float;
+precision highp int;
+
+uniform highp sampler2D tex;
+
+varying highp vec2 texCoord;
+
+void main()
+{
+    gl_FragData[0] = texture2DLodEXT(tex, texCoord, 0.0);
+}
+
